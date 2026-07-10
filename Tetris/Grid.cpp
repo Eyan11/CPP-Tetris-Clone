@@ -43,6 +43,12 @@ bool Grid::IsCellOutside(int row, int col)
 	return (row < 0 || row >= numRows || col < 0 || col >= numCols);
 }
 
+// Returns number of rows in the grid
+int Grid::GetGridHeight()
+{
+	return numRows;
+}
+
 
 // Prints grid 2d array
 void Grid::Print()

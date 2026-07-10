@@ -14,10 +14,12 @@ public:
 	void MoveBlockLeft();
 	void MoveBlockRight();
 	void MoveBlockDown();
+	void MoveBlockToFloor();
 	Grid grid;
 
 private:
 	bool IsBlockOutside();
+	void RotateBlock(bool IsClockwise);
 	std::vector<Block> GetAllBlocks();
 	std::vector<Block> blocks;
 	Block curBlock;

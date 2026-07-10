@@ -49,6 +49,23 @@ void Game::HandleInput()
 		case KEY_DOWN: // Move block down 1 cell
 			MoveBlockDown();
 			break;
+		case KEY_UP: // Move block to floor
+			MoveBlockToFloor();
+			break;
+
+		case KEY_W: // Rotate clockwise
+			RotateBlock(true);
+			break;
+		case KEY_D: // Rotate clockwise
+			RotateBlock(true);
+			break;
+
+		case KEY_S: // Rotate counter-clockwise
+			RotateBlock(false);
+			break;
+		case KEY_A: // Rotate counter-clockwise
+			RotateBlock(false);
+			break;
 	}
 }
 
@@ -80,6 +97,12 @@ void Game::MoveBlockDown()
 	if (IsBlockOutside()) curBlock.Move(-1, 0);
 }
 
+// Moves the block to floor by repeatedly moving it down 1 cell for the number of rows in the grid
+void Game::MoveBlockToFloor()
+{
+	for (int i = 0; i < grid.GetGridHeight() - 2; i++) MoveBlockDown();
+}
+
 // Returns true if any cells in current block is outside the boundaries of the game grid
 bool Game::IsBlockOutside()
 {
@@ -89,4 +112,12 @@ bool Game::IsBlockOutside()
 		if (grid.IsCellOutside(cell.row, cell.col)) return true;
 	}
 	return false;
+}
+
+// Rotates the block clockwise or counter clockwise and undoes the rotation if new block cell positions are outside the grid
+void Game::RotateBlock(bool IsClockwise)
+{
+	curBlock.Rotate(IsClockwise);
+	if (IsBlockOutside()) curBlock.Rotate(!IsClockwise); // undo rotation if block is outside grid
+	// TODO: instead of undoing the rotation, move block away from boundary
 }

@@ -1,3 +1,4 @@
+#include <iostream>
 #include "Block.h"
 
 Block::Block()
@@ -26,6 +27,20 @@ void Block::Move(int rows, int cols)
 {
 	rowOffset += rows;
 	colOffset += cols;
+}
+
+// Changes the rotation state of the block by incrementing or decrementing it while keeping it between 0 and 3
+void Block::Rotate(bool isClockwise)
+{
+	// Cast cells size to int for O-block rotation to work
+	if (isClockwise) {
+		rotationState++;
+		if (rotationState >= (int)cells.size()) rotationState = 0;
+	}
+	else {
+		rotationState--;
+		if (rotationState < 0) rotationState = (int)cells.size() - 1;
+	}
 }
 
 // Returns world position of all cells by applying the row/col offsets to the filled cell positions
