@@ -2,7 +2,9 @@
 
 #include <iostream>
 #include <raylib.h>
+
 #include "grid.h"
+#include "blocks.cpp" // Defines all block types
 
 int main()
 {
@@ -13,10 +15,9 @@ int main()
 
     // Test grid
     Grid grid = Grid();
-    grid.grid[0][0] = 1;
-    grid.grid[3][5] = 4;
-    grid.grid[17][6] = 7;
     grid.Print();
+
+    JBlock block = JBlock();
 
     // Game Loop / Update
     while (WindowShouldClose() == false) // If escape or close icon pressed
@@ -25,6 +26,7 @@ int main()
         ClearBackground(backgroundColor); // Wipe previous frame's graphics and set all pixels to color
 
         grid.Draw();
+        block.Draw();
 
         EndDrawing();
     }
