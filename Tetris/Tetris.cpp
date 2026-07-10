@@ -2,9 +2,7 @@
 
 #include <iostream>
 #include <raylib.h>
-
-#include "grid.h"
-#include "blocks.cpp" // Defines all block types
+#include "Game.h"
 
 int main()
 {
@@ -13,21 +11,18 @@ int main()
     InitWindow(300, 600, "Tetris Clone");
     SetTargetFPS(60); // If no frame rate is defined it will run as fast as possible
 
-    // Test grid
-    Grid grid = Grid();
-    grid.Print();
-
-    JBlock block = JBlock();
+    Game game = Game();
 
     // Game Loop / Update
     while (WindowShouldClose() == false) // If escape or close icon pressed
     {
+        // *** Game Loop Logic
+        game.HandleInput();
+
+        // *** Draw
         BeginDrawing();
         ClearBackground(backgroundColor); // Wipe previous frame's graphics and set all pixels to color
-
-        grid.Draw();
-        block.Draw();
-
+        game.Draw(); // Handles drawing everything for the game
         EndDrawing();
     }
 

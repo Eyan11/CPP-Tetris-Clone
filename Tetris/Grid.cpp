@@ -1,5 +1,4 @@
 #include <iostream>
-
 #include "grid.h"
 #include "Colors.h"
 
@@ -38,6 +37,11 @@ void Grid::Draw()
 	}
 }
 
+// Returns true if given cell position (row, col) is outside the boundaries of the game grid
+bool Grid::IsCellOutside(int row, int col)
+{
+	return (row < 0 || row >= numRows || col < 0 || col >= numCols);
+}
 
 
 // Prints grid 2d array
