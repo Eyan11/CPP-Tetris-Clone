@@ -55,6 +55,46 @@ bool Grid::IsCellEmpty(int row, int col)
 	return grid[row][col] == 0;
 }
 
+// Itrerates through all rows (bottom up) and clears rows with a block in every cell, then moves the rows above downwards
+int Grid::ClearFullRows()
+{
+	int completed = 0;
+	for (int row = numRows - 1; row >= 0; row--) {
+		if (IsRowFull(row)) {
+			ClearRow(row);
+			completed++;
+		}
+		else if (completed > 0) MoveRowDown(row, completed);
+	}
+	return completed;
+}
+
+// Returns true if there are no blocks in the row (all cells in row are non-zero)
+bool Grid::IsRowFull(int row)
+{
+	for (int col = 0; col < numCols; col++) {
+		if (grid[row][col] == 0) return false;
+	}
+	return true;
+}
+
+// Sets all grid cells in a given row to zero
+void Grid::ClearRow(int row)
+{
+	for (int col = 0; col < numCols; col++) {
+		grid[row][col] = 0;
+	}
+}
+
+// Copies the given row numRows downwards and sets the old row as empty
+void Grid::MoveRowDown(int row, int numRows)
+{
+	for (int col = 0; col < numCols; col++) {
+		grid[row + numRows][col] = grid[row][col];
+		grid[row][col] = 0;
+	}
+}
+
 // Prints grid 2d array
 void Grid::Print()
 {

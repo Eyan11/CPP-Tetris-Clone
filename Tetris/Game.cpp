@@ -125,7 +125,7 @@ void Game::RotateBlock(bool IsClockwise)
 	// TODO: instead of undoing the rotation, move block away from boundary
 }
 
-// Copies the current block cells onto the grid and spawns a new block
+// Copies the current block cells onto the grid, spawns a new block, and clears any full rows
 void Game::LockBlock()
 {
 	// Copy block filled cell positions onto grid
@@ -134,9 +134,10 @@ void Game::LockBlock()
 		grid.grid[cell.row][cell.col] = curBlock.id;
 	}
 
-	// Spawn next block
+	// Spawn next block and clear any full rows
 	curBlock = nextBlock;
 	nextBlock = GetRandomBlock();
+	grid.ClearFullRows();
 }
 
 // Returns true if all cells in the current block are empty in the grid (it fits in current position on grid)
