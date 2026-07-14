@@ -76,7 +76,7 @@ void Game::MoveBlockLeft()
 	curBlock.Move(0, -1);
 
 	// Wall collisions, undo block movement
-	if (IsBlockOutside()) curBlock.Move(0, 1);
+	if (IsBlockOutside() || !BlockFits()) curBlock.Move(0, 1);
 }
 
 // Moves the column of the current block 1 cell to the right
@@ -85,7 +85,7 @@ void Game::MoveBlockRight()
 	curBlock.Move(0, 1);
 
 	// Wall collisions, undo block movement
-	if (IsBlockOutside()) curBlock.Move(0, -1);
+	if (IsBlockOutside() || !BlockFits()) curBlock.Move(0, -1);
 }
 
 // Moves the row of the current block 1 cell downwards
@@ -94,7 +94,10 @@ void Game::MoveBlockDown()
 	curBlock.Move(1, 0);
 
 	// Wall collisions, undo block movement
-	if (IsBlockOutside()) curBlock.Move(-1, 0);
+	if (IsBlockOutside() || !BlockFits()) {
+		curBlock.Move(-1, 0);
+		LockBlock(); // Stop block from moving and spawn next block
+	}
 }
 
 // Moves the block to floor by repeatedly moving it down 1 cell for the number of rows in the grid
@@ -118,6 +121,30 @@ bool Game::IsBlockOutside()
 void Game::RotateBlock(bool IsClockwise)
 {
 	curBlock.Rotate(IsClockwise);
-	if (IsBlockOutside()) curBlock.Rotate(!IsClockwise); // undo rotation if block is outside grid
+	if (IsBlockOutside() || !BlockFits()) curBlock.Rotate(!IsClockwise); // undo rotation if block is outside grid
 	// TODO: instead of undoing the rotation, move block away from boundary
+}
+
+// Copies the current block cells onto the grid and spawns a new block
+void Game::LockBlock()
+{
+	// Copy block filled cell positions onto grid
+	std::vector<Position> filledCells = curBlock.GetCellPositions();
+	for (Position cell : filledCells) {
+		grid.grid[cell.row][cell.col] = curBlock.id;
+	}
+
+	// Spawn next block
+	curBlock = nextBlock;
+	nextBlock = GetRandomBlock();
+}
+
+// Returns true if all cells in the current block are empty in the grid (it fits in current position on grid)
+bool Game::BlockFits()
+{
+	std::vector<Position> filledCells = curBlock.GetCellPositions();
+	for (Position cell : filledCells) {
+		if (!grid.IsCellEmpty(cell.row, cell.col)) return false;
+	}
+	return true;
 }

@@ -4,6 +4,19 @@
 #include <raylib.h>
 #include "Game.h"
 
+double lastUpdateTime = 0;
+
+// Returns true if "interval" amount of time has passed
+bool OnIntervalTriggered(double interval) 
+{
+    double curTime = GetTime();
+    if (curTime - lastUpdateTime >= interval) {
+        lastUpdateTime = curTime;
+        return true;
+    }
+    return false;
+}
+
 int main()
 {
     Color backgroundColor = { 44, 44, 127, 255 };
@@ -18,6 +31,7 @@ int main()
     {
         // *** Game Loop Logic
         game.HandleInput();
+        if (OnIntervalTriggered(0.2)) game.MoveBlockDown();
 
         // *** Draw
         BeginDrawing();

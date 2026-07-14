@@ -49,6 +49,11 @@ int Grid::GetGridHeight()
 	return numRows;
 }
 
+// Returns true if [row][cell] is empty in the grid
+bool Grid::IsCellEmpty(int row, int col)
+{
+	return grid[row][col] == 0;
+}
 
 // Prints grid 2d array
 void Grid::Print()

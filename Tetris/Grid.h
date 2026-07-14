@@ -7,10 +7,11 @@ class Grid {
 public:
 	Grid();
 	void Initialize();
-	void Print();
 	void Draw();
 	bool IsCellOutside(int row, int col);
 	int GetGridHeight();
+	bool IsCellEmpty(int row, int col);
+	void Print();
 	int grid[20][10];
 
 private:
