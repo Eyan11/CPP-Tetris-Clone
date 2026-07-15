@@ -7,6 +7,7 @@ Game::Game()
 	blocks = GetAllBlocks();
 	curBlock = GetRandomBlock();
 	nextBlock = GetRandomBlock();
+	gameOver = false;
 }
 
 // Returns a random block while garunteeing all blocks are given 
@@ -38,6 +39,10 @@ void Game::Draw()
 void Game::HandleInput()
 {
 	int keyPressed = GetKeyPressed();
+
+	// If game over and any key is pressed, restart
+	if (gameOver && keyPressed != 0) Reset();
+		
 	switch (keyPressed) 
 	{
 		case KEY_LEFT: // Move block left 1 cell
@@ -73,6 +78,8 @@ void Game::HandleInput()
 // Moves the column of the current block 1 cell to the left
 void Game::MoveBlockLeft()
 {
+	if (gameOver) return;
+
 	curBlock.Move(0, -1);
 
 	// Wall collisions, undo block movement
@@ -82,6 +89,8 @@ void Game::MoveBlockLeft()
 // Moves the column of the current block 1 cell to the right
 void Game::MoveBlockRight()
 {
+	if (gameOver) return;
+
 	curBlock.Move(0, 1);
 
 	// Wall collisions, undo block movement
@@ -91,6 +100,8 @@ void Game::MoveBlockRight()
 // Moves the row of the current block 1 cell downwards
 void Game::MoveBlockDown()
 {
+	if (gameOver) return;
+
 	curBlock.Move(1, 0);
 
 	// Wall collisions, undo block movement
@@ -103,6 +114,8 @@ void Game::MoveBlockDown()
 // Moves the block to floor by repeatedly moving it down 1 cell for the number of rows in the grid
 void Game::MoveBlockToFloor()
 {
+	if (gameOver) return;
+
 	for (int i = 0; i < grid.GetGridHeight() - 2; i++) MoveBlockDown();
 }
 
@@ -120,6 +133,8 @@ bool Game::IsBlockOutside()
 // Rotates the block clockwise or counter clockwise and undoes the rotation if new block cell positions are outside the grid
 void Game::RotateBlock(bool IsClockwise)
 {
+	if (gameOver) return;
+
 	curBlock.Rotate(IsClockwise);
 	if (IsBlockOutside() || !BlockFits()) curBlock.Rotate(!IsClockwise); // undo rotation if block is outside grid
 	// TODO: instead of undoing the rotation, move block away from boundary
@@ -134,8 +149,13 @@ void Game::LockBlock()
 		grid.grid[cell.row][cell.col] = curBlock.id;
 	}
 
-	// Spawn next block and clear any full rows
+	// Get new block and make sure it fits in grid when spawned
 	curBlock = nextBlock;
+	if (BlockFits() == false) {
+		gameOver = true;
+	}
+
+	// Spawn next block and clear any full rows
 	nextBlock = GetRandomBlock();
 	grid.ClearFullRows();
 }
@@ -148,4 +168,13 @@ bool Game::BlockFits()
 		if (!grid.IsCellEmpty(cell.row, cell.col)) return false;
 	}
 	return true;
+}
+
+void Game::Reset()
+{
+	gameOver = false;
+	grid.Initialize(); // Clear blocks on grid
+	blocks = GetAllBlocks(); // Resets the pool of blocks to randomly choose from
+	curBlock = GetRandomBlock();
+	nextBlock = GetRandomBlock();
 }

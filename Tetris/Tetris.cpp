@@ -31,7 +31,7 @@ int main()
     {
         // *** Game Loop Logic
         game.HandleInput();
-        if (OnIntervalTriggered(0.2)) game.MoveBlockDown();
+        if (OnIntervalTriggered(0.02)) game.MoveBlockDown();
 
         // *** Draw
         BeginDrawing();

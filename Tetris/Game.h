@@ -16,14 +16,16 @@ public:
 	void MoveBlockDown();
 	void MoveBlockToFloor();
 	Grid grid;
+	bool gameOver;
 
 private:
 	bool IsBlockOutside();
 	void RotateBlock(bool IsClockwise);
 	void LockBlock();
 	bool BlockFits();
+	void Reset();
 	std::vector<Block> GetAllBlocks();
-	std::vector<Block> blocks;
+	std::vector<Block> blocks; // The pool of blocks to randomly choose from
 	Block curBlock;
 	Block nextBlock;
 };
