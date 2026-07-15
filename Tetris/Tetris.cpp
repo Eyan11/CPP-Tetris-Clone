@@ -34,12 +34,11 @@ int main()
     {
         // *** Game Loop Logic
         game.HandleInput();
-        if (OnIntervalTriggered(0.2)) game.MoveBlockDown();
+        if (OnIntervalTriggered(0.2)) game.MoveBlockDown(false, false);
 
         // *** Draw
         BeginDrawing();
         ClearBackground(backgroundColor); // Wipe previous frame's graphics and set all pixels to color
-        game.Draw(); // Handles drawing everything for the game
 
         // Score
         DrawTextEx(font, "Score", { 365,15 }, 38, 2, WHITE);
@@ -54,6 +53,8 @@ int main()
         DrawRectangleRounded({ 320,215,170,180 }, 0.3, 6, lightBlue);
 
         if(game.gameOver) DrawTextEx(font, "GAME OVER", { 320, 450 }, 38, 2, WHITE);
+
+        game.Draw(); // Grid, curBlock, and nextBlock
         
         EndDrawing();
     }

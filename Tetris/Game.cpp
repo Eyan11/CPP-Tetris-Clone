@@ -33,7 +33,18 @@ std::vector<Block> Game::GetAllBlocks()
 void Game::Draw()
 {
 	grid.Draw();
-	curBlock.Draw();
+	curBlock.Draw(11, 11);
+	switch (nextBlock.id) { // Make sure all block types are centered
+		case 3:
+			nextBlock.Draw(255, 290);
+			break;
+		case 4:
+			nextBlock.Draw(255, 280);
+			break;
+		default:
+			nextBlock.Draw(270, 270);
+			break;
+	}
 }
 
 // Checks for input and calls respective method to handle it
@@ -53,7 +64,7 @@ void Game::HandleInput()
 			MoveBlockRight();
 			break;
 		case KEY_DOWN: // Move block down 1 cell
-			MoveBlockDown(true);
+			MoveBlockDown(true, false);
 			break;
 		case KEY_UP: // Move block to floor
 			MoveBlockToFloor();
@@ -99,7 +110,7 @@ void Game::MoveBlockRight()
 }
 
 // Moves the row of the current block 1 cell downwards
-void Game::MoveBlockDown(bool isSoftDrop, bool isHardDrop) // Both arguments are optional
+void Game::MoveBlockDown(bool isSoftDrop, bool isHardDrop)
 {
 	if (gameOver) return;
 
