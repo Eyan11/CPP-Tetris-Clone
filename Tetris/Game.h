@@ -8,12 +8,14 @@ class Game
 {
 public:
 	Game();
+	~Game();
 	void Draw();
 	void HandleInput();
 	void MoveBlockDown(bool isSoftDrop, bool isHardDrop);
 	void MoveBlockToFloor();
 	bool gameOver;
 	int score;
+	Music music;
 
 private:
 	bool IsBlockOutside();
@@ -30,4 +32,6 @@ private:
 	Block curBlock;
 	Block nextBlock;
 	Grid grid;
+	Sound rotateSfx;
+	Sound clearSfx;
 };

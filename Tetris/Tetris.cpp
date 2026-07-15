@@ -33,6 +33,7 @@ int main()
     while (WindowShouldClose() == false) // If escape or close icon pressed
     {
         // *** Game Loop Logic
+        UpdateMusicStream(game.music);
         game.HandleInput();
         if (OnIntervalTriggered(0.2)) game.MoveBlockDown(false, false);
 

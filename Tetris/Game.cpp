@@ -1,7 +1,7 @@
 #include <random>
 #include "Game.h"
 
-Game::Game()
+Game::Game() // Constructor
 {
 	grid = Grid();
 	blocks = GetAllBlocks();
@@ -9,6 +9,20 @@ Game::Game()
 	nextBlock = GetRandomBlock();
 	gameOver = false;
 	score = 0;
+
+	InitAudioDevice();
+	music = LoadMusicStream("Assets/Sounds/music.mp3");
+	PlayMusicStream(music);
+	rotateSfx = LoadSound("Assets/Sounds/rotate.mp3");
+	clearSfx = LoadSound("Assets/Sounds/clear.mp3");
+}
+
+Game::~Game() // Destructor
+{
+	UnloadSound(rotateSfx);
+	UnloadSound(clearSfx);
+	UnloadMusicStream(music);
+	CloseAudioDevice();
 }
 
 // Returns a random block while garunteeing all blocks are given 
@@ -150,7 +164,9 @@ void Game::RotateBlock(bool IsClockwise)
 	if (gameOver) return;
 
 	curBlock.Rotate(IsClockwise);
-	if (IsBlockOutside() || !BlockFits()) curBlock.Rotate(!IsClockwise); // undo rotation if block is outside grid
+	if (IsBlockOutside() || !BlockFits()) curBlock.Rotate(!IsClockwise); // Undo rotation if block is outside grid
+	else PlaySound(rotateSfx); // If rotation is allowed, play sound
+
 	// TODO: instead of undoing the rotation, move block away from boundary
 }
 
@@ -172,7 +188,11 @@ void Game::LockBlock()
 	// Spawn next block and clear any full rows
 	nextBlock = GetRandomBlock();
 	int rowsCleared = grid.ClearFullRows();
-	UpdateScore(rowsCleared, 0);
+
+	if (rowsCleared > 0) {
+		PlaySound(clearSfx);
+		UpdateScore(rowsCleared, 0);
+	}
 }
 
 // Returns true if all cells in the current block are empty in the grid (it fits in current position on grid)
