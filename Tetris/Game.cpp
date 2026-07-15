@@ -8,6 +8,7 @@ Game::Game()
 	curBlock = GetRandomBlock();
 	nextBlock = GetRandomBlock();
 	gameOver = false;
+	score = 0;
 }
 
 // Returns a random block while garunteeing all blocks are given 
@@ -52,7 +53,7 @@ void Game::HandleInput()
 			MoveBlockRight();
 			break;
 		case KEY_DOWN: // Move block down 1 cell
-			MoveBlockDown();
+			MoveBlockDown(true);
 			break;
 		case KEY_UP: // Move block to floor
 			MoveBlockToFloor();
@@ -98,7 +99,7 @@ void Game::MoveBlockRight()
 }
 
 // Moves the row of the current block 1 cell downwards
-void Game::MoveBlockDown()
+void Game::MoveBlockDown(bool isSoftDrop, bool isHardDrop) // Both arguments are optional
 {
 	if (gameOver) return;
 
@@ -109,6 +110,8 @@ void Game::MoveBlockDown()
 		curBlock.Move(-1, 0);
 		LockBlock(); // Stop block from moving and spawn next block
 	}
+	else if (isHardDrop) UpdateScore(0, 2); // 2 points for pressing up key per grid space dropped
+	else if (isSoftDrop) (UpdateScore(0, 1)); // 1 point for pressing down key per grid space dropped
 }
 
 // Moves the block to floor by repeatedly moving it down 1 cell for the number of rows in the grid
@@ -116,7 +119,7 @@ void Game::MoveBlockToFloor()
 {
 	if (gameOver) return;
 
-	for (int i = 0; i < grid.GetGridHeight() - 2; i++) MoveBlockDown();
+	for (int i = 0; i < grid.GetGridHeight() - 2; i++) MoveBlockDown(false, true);
 }
 
 // Returns true if any cells in current block is outside the boundaries of the game grid
@@ -157,7 +160,8 @@ void Game::LockBlock()
 
 	// Spawn next block and clear any full rows
 	nextBlock = GetRandomBlock();
-	grid.ClearFullRows();
+	int rowsCleared = grid.ClearFullRows();
+	UpdateScore(rowsCleared, 0);
 }
 
 // Returns true if all cells in the current block are empty in the grid (it fits in current position on grid)
@@ -170,6 +174,7 @@ bool Game::BlockFits()
 	return true;
 }
 
+// Wipes all blocks from grid, resets block pool, and spawns a new block
 void Game::Reset()
 {
 	gameOver = false;
@@ -177,4 +182,28 @@ void Game::Reset()
 	blocks = GetAllBlocks(); // Resets the pool of blocks to randomly choose from
 	curBlock = GetRandomBlock();
 	nextBlock = GetRandomBlock();
+	score = 0;
+}
+
+// Updates the score variable depending on how many lines were cleared or how many times the block has been moved down
+void Game::UpdateScore(int linesCleared, int moveDownPoints)
+{
+	switch (linesCleared) {
+		case 1:
+			score += 100;
+			break;
+		case 2:
+			score += 300;
+			break;
+		case 3:
+			score += 500;
+			break;
+		case 4:
+			score += 800;
+			break;
+		default:
+			break;
+	}
+
+	score += moveDownPoints;
 }

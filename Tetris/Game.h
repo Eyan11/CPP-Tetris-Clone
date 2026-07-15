@@ -13,10 +13,11 @@ public:
 	void HandleInput();
 	void MoveBlockLeft();
 	void MoveBlockRight();
-	void MoveBlockDown();
+	void MoveBlockDown(bool isSoftDrop = false, bool isHardDrop = false);
 	void MoveBlockToFloor();
 	Grid grid;
 	bool gameOver;
+	int score;
 
 private:
 	bool IsBlockOutside();
@@ -24,6 +25,7 @@ private:
 	void LockBlock();
 	bool BlockFits();
 	void Reset();
+	void UpdateScore(int linesCleared, int moveDownPoints);
 	std::vector<Block> GetAllBlocks();
 	std::vector<Block> blocks; // The pool of blocks to randomly choose from
 	Block curBlock;
