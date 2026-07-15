@@ -13,12 +13,13 @@ Block::Block()
 // Draws all filled cells with margin given its block id and rotation state
 void Block::Draw()
 {
-	int margin = 1;
+	int gridMargin = 11;
+	int cellMargin = 1;
 	std::vector<Position> filledCells = GetCellPositions(); // Get cells to draw using offset from movement
 
 	for (Position cell : filledCells) {
-		DrawRectangle(cell.col * cellSize + margin, cell.row * cellSize + margin,
-			cellSize - margin, cellSize - margin, colors[id]);
+		DrawRectangle(cell.col * cellSize + gridMargin, cell.row * cellSize + gridMargin,
+			cellSize - cellMargin, cellSize - cellMargin, colors[id]);
 	}
 }
 

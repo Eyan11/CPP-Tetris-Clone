@@ -26,13 +26,14 @@ void Grid::Initialize()
 // Draws all grid colors with a margin to show grid outline
 void Grid::Draw()
 {
-	int margin = 1;
+	int gridMargin = 11;
+	int cellMargin = 1;
 	int cellValue = 0;
 	for (int row = 0; row < numRows; row++) {
 		for (int col = 0; col < numCols; col++) {
 			cellValue = grid[row][col];
-			DrawRectangle(col * cellSize + margin, row * cellSize + margin,
-				cellSize - margin, cellSize - margin, colors[cellValue]);
+			DrawRectangle(col * cellSize + gridMargin, row * cellSize + gridMargin,
+				cellSize - cellMargin, cellSize - cellMargin, colors[cellValue]);
 		}
 	}
 }

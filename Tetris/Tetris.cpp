@@ -3,6 +3,7 @@
 #include <iostream>
 #include <raylib.h>
 #include "Game.h"
+#include "Colors.h"
 
 double lastUpdateTime = 0;
 
@@ -21,8 +22,10 @@ int main()
 {
     Color backgroundColor = { 44, 44, 127, 255 };
 
-    InitWindow(300, 600, "Tetris Clone");
+    InitWindow(500, 620, "Tetris Clone");
     SetTargetFPS(60); // If no frame rate is defined it will run as fast as possible
+
+    Font font = LoadFontEx("Assets/monogram.ttf", 64, 0, 0);
 
     Game game = Game();
 
@@ -31,12 +34,20 @@ int main()
     {
         // *** Game Loop Logic
         game.HandleInput();
-        if (OnIntervalTriggered(0.02)) game.MoveBlockDown();
+        if (OnIntervalTriggered(0.2)) game.MoveBlockDown();
 
         // *** Draw
         BeginDrawing();
         ClearBackground(backgroundColor); // Wipe previous frame's graphics and set all pixels to color
         game.Draw(); // Handles drawing everything for the game
+
+        DrawTextEx(font, "Score", { 365,15 }, 38, 2, WHITE);
+        DrawRectangleRounded({ 320,55,170,60 }, 0.3, 6, lightBlue);
+        DrawTextEx(font, "Next", { 370,175 }, 38, 2, WHITE);
+        DrawRectangleRounded({ 320,215,170,180 }, 0.3, 6, lightBlue);
+
+        if(game.gameOver) DrawTextEx(font, "GAME OVER", { 320, 450 }, 38, 2, WHITE);
+        
         EndDrawing();
     }
 
