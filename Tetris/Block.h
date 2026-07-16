@@ -15,6 +15,7 @@ public:
 	std::vector<Position> GetCellPositions();
 	int id; // type of block, initialized in child class
 	std::map<int, std::vector<Position>> cells; // map rotation state int to a vector filled cell indices (row, col)
+	bool isGhostBlock;
 
 private:
 	int cellSize;

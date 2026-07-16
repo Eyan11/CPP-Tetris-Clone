@@ -18,12 +18,13 @@ public:
 	Music music;
 
 private:
-	bool IsBlockOutside();
+	bool IsBlockOutside(Block block);
 	void RotateBlock(bool IsClockwise);
 	void LockBlock();
-	bool BlockFits();
+	bool BlockFits(Block block);
 	void Reset();
 	void UpdateScore(int linesCleared, int moveDownPoints);
+	void UpdateGhostBlockRow();
 	Block GetRandomBlock();
 	std::vector<Block> GetAllBlocks();
 	void MoveBlockLeft();
@@ -31,6 +32,7 @@ private:
 	std::vector<Block> blocks; // The pool of blocks to randomly choose from
 	Block curBlock;
 	Block nextBlock;
+	Block ghostBlock;
 	Grid grid;
 	Sound rotateSfx;
 	Sound clearSfx;

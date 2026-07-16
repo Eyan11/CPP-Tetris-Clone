@@ -8,6 +8,7 @@ Block::Block()
 	colors = GetCellColors();
 	rowOffset = 0;
 	colOffset = 0;
+	isGhostBlock = false;
 }
 
 // Draws all filled cells with margin given its block id and rotation state
@@ -16,9 +17,17 @@ void Block::Draw(int offsetX, int offsetY)
 	int cellMargin = 1;
 	std::vector<Position> filledCells = GetCellPositions(); // Get cells to draw using offset from movement
 
-	for (Position cell : filledCells) {
-		DrawRectangle(cell.col * cellSize + offsetX, cell.row * cellSize + offsetY,
-			cellSize - cellMargin, cellSize - cellMargin, colors[id]);
+	if (isGhostBlock == false) {
+		for (Position cell : filledCells) {
+			DrawRectangle(cell.col * cellSize + offsetX, cell.row * cellSize + offsetY,
+				cellSize - cellMargin, cellSize - cellMargin, colors[id]);
+		}
+	}
+	else { // Only draw cell outline for ghost blocks
+		for (Position cell : filledCells) {
+			DrawRectangleLines(cell.col * cellSize + offsetX, cell.row * cellSize + offsetY,
+				cellSize - cellMargin, cellSize - cellMargin, colors[id]);
+		}
 	}
 }
 
