@@ -123,10 +123,10 @@ void Game::MoveBlockRight()
 	if (IsBlockOutside() || !BlockFits()) curBlock.Move(0, -1);
 }
 
-// Moves the row of the current block 1 cell downwards
-void Game::MoveBlockDown(bool isSoftDrop, bool isHardDrop)
+// Moves the row of the current block 1 cell downwards and returns true if move is allowed/successful
+bool Game::MoveBlockDown(bool isSoftDrop, bool isHardDrop)
 {
-	if (gameOver) return;
+	if (gameOver) return false;
 
 	curBlock.Move(1, 0);
 
@@ -134,9 +134,12 @@ void Game::MoveBlockDown(bool isSoftDrop, bool isHardDrop)
 	if (IsBlockOutside() || !BlockFits()) {
 		curBlock.Move(-1, 0);
 		LockBlock(); // Stop block from moving and spawn next block
+		return false;
 	}
-	else if (isHardDrop) UpdateScore(0, 2); // 2 points for pressing up key per grid space dropped
+
+	if (isHardDrop) UpdateScore(0, 2); // 2 points for pressing up key per grid space dropped
 	else if (isSoftDrop) (UpdateScore(0, 1)); // 1 point for pressing down key per grid space dropped
+	return true;
 }
 
 // Moves the block to floor by repeatedly moving it down 1 cell for the number of rows in the grid
@@ -144,7 +147,9 @@ void Game::MoveBlockToFloor()
 {
 	if (gameOver) return;
 
-	for (int i = 0; i < grid.GetGridHeight() - 2; i++) MoveBlockDown(false, true);
+	for (int i = 0; i < grid.GetGridHeight() - 2; i++) {
+		if (MoveBlockDown(false, true) == false) break;
+	}
 }
 
 // Returns true if any cells in current block is outside the boundaries of the game grid

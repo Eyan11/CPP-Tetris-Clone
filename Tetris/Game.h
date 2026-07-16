@@ -11,7 +11,7 @@ public:
 	~Game();
 	void Draw();
 	void HandleInput();
-	void MoveBlockDown(bool isSoftDrop, bool isHardDrop);
+	bool MoveBlockDown(bool isSoftDrop, bool isHardDrop);
 	void MoveBlockToFloor();
 	bool gameOver;
 	int score;
