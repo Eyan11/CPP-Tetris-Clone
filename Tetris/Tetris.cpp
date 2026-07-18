@@ -42,20 +42,24 @@ int main()
         ClearBackground(backgroundColor); // Wipe previous frame's graphics and set all pixels to color
 
         // Score
-        DrawTextEx(font, "Score", { 365,15 }, 38, 2, WHITE);
-        DrawRectangleRounded({ 320,55,170,60 }, 0.3, 6, lightBlue);
+        DrawTextEx(font, "Score", { 365,5 }, 38, 2, WHITE);
+        DrawRectangleRounded({ 320,45,170,60 }, 0.3, 6, lightBlue);
         char scoreText[10];
         sprintf_s(scoreText, "%d", game.score); // convert int to char array
         Vector2 textSize = MeasureTextEx(font, scoreText, 38, 2);
-        DrawTextEx(font, scoreText, {320 + (170 - textSize.x) / 2, 65}, 38, 2, WHITE);
+        DrawTextEx(font, scoreText, {320 + (170 - textSize.x) / 2, 55 }, 38, 2, WHITE);
 
         // Next Block
-        DrawTextEx(font, "Next", { 370,175 }, 38, 2, WHITE);
-        DrawRectangleRounded({ 320,215,170,180 }, 0.3, 6, lightBlue);
+        DrawTextEx(font, "Next", { 370,115 }, 38, 2, WHITE);
+        DrawRectangleRounded({ 320,155,170,180 }, 0.3, 6, lightBlue);
 
-        if(game.gameOver) DrawTextEx(font, "GAME OVER", { 320, 450 }, 38, 2, WHITE);
+        // Hold Block
+        DrawTextEx(font, "Hold", { 370,345 }, 38, 2, WHITE);
+        DrawRectangleRounded({ 320,385,170,180 }, 0.3, 6, lightBlue);
 
-        game.Draw(); // Grid, curBlock, and nextBlock
+        if(game.gameOver) DrawTextEx(font, "GAME OVER", { 320, 570 }, 38, 2, WHITE);
+
+        game.Draw(); // Grid, curBlock, nextBlock, and holdBlock
         
         EndDrawing();
     }

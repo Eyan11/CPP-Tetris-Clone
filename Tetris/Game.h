@@ -12,7 +12,7 @@ public:
 	void Draw();
 	void HandleInput();
 	bool MoveBlockDown(bool isSoftDrop, bool isHardDrop);
-	void MoveBlockToFloor();
+	void HardDropBlock();
 	bool gameOver;
 	int score;
 	Music music;
@@ -29,11 +29,15 @@ private:
 	std::vector<Block> GetAllBlocks();
 	void MoveBlockLeft();
 	void MoveBlockRight();
+	void HoldBlock();
+	void SpawnNewBlock();
 	std::vector<Block> blocks; // The pool of blocks to randomly choose from
 	Block curBlock;
 	Block nextBlock;
 	Block ghostBlock;
+	Block holdBlock;
 	Grid grid;
 	Sound rotateSfx;
 	Sound clearSfx;
+	bool usedHold;
 };

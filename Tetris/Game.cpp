@@ -6,14 +6,16 @@ Game::Game() // Constructor
 {
 	grid = Grid();
 	blocks = GetAllBlocks();
-	curBlock = GetRandomBlock();
-	ghostBlock = curBlock;
-	ghostBlock.isGhostBlock = true;
-	UpdateGhostBlockRow();
-	nextBlock = GetRandomBlock();
 	gameOver = false;
 	score = 0;
+	usedHold = false;
 
+	nextBlock = GetRandomBlock();
+	holdBlock.isHoldBlock = true;
+	holdBlock.isHoldBlockSet = false;
+	SpawnNewBlock();
+
+	// Sound
 	InitAudioDevice();
 	music = LoadMusicStream("Assets/Sounds/music.mp3");
 	PlayMusicStream(music);
@@ -47,22 +49,38 @@ std::vector<Block> Game::GetAllBlocks()
 	return { IBlock(), JBlock(), LBlock(), OBlock(), SBlock(), TBlock(), ZBlock() };
 }
 
-// Handles calling all draw methods for the game (grid, block, etc.)
+// Handles calling all draw methods for the game including grid, curBlock, ghostBlock, nextBlock, and holdBlock
 void Game::Draw()
 {
 	grid.Draw();
 	curBlock.Draw(11, 11);
+
 	if(!gameOver) ghostBlock.Draw(11, 11);
+
 	switch (nextBlock.id) { // Make sure all block types are centered
-		case 3:
-			nextBlock.Draw(255, 290);
+		case 3: // I block
+			nextBlock.Draw(255, 225);
 			break;
-		case 4:
-			nextBlock.Draw(255, 280);
+		case 4: // O block
+			nextBlock.Draw(255, 215);
 			break;
 		default:
-			nextBlock.Draw(270, 270);
+			nextBlock.Draw(270, 205);
 			break;
+	}
+
+	if (holdBlock.isHoldBlockSet) {
+		switch (holdBlock.id) { // Make sure all block types are centered
+			case 3: // I block
+				holdBlock.Draw(345, 430);
+				break;
+			case 4: // O block
+				holdBlock.Draw(375, 450);
+				break;
+			default:
+				holdBlock.Draw(360, 440);
+				break;
+		}
 	}
 }
 
@@ -71,8 +89,9 @@ void Game::HandleInput()
 {
 	int keyPressed = GetKeyPressed();
 
-	// If game over and any key is pressed, restart
-	if (gameOver && keyPressed != 0) Reset();
+	if (gameOver && keyPressed != 0) Reset(); // If game over and any key is pressed, restart
+
+	if (gameOver) return; // Prevent input when game is over
 		
 	switch (keyPressed) 
 	{
@@ -85,22 +104,20 @@ void Game::HandleInput()
 		case KEY_DOWN: // Move block down 1 cell
 			MoveBlockDown(true, false);
 			break;
-		case KEY_UP: // Move block to floor
-			MoveBlockToFloor();
-			break;
 
-		case KEY_W: // Rotate clockwise
+		case KEY_UP: // Rotate clockwise (right)
 			RotateBlock(true);
 			break;
-		case KEY_D: // Rotate clockwise
-			RotateBlock(true);
+		case KEY_Z: // Rotate counter-clockwise (left)
+			RotateBlock(false);
 			break;
 
-		case KEY_S: // Rotate counter-clockwise
-			RotateBlock(false);
+		case KEY_SPACE: // Swap hold and current block
+			HardDropBlock();
 			break;
-		case KEY_A: // Rotate counter-clockwise
-			RotateBlock(false);
+
+		case KEY_C: // Swap hold and current block
+			HoldBlock();
 			break;
 	}
 }
@@ -109,8 +126,6 @@ void Game::HandleInput()
 // Moves the column of the current block 1 cell to the left
 void Game::MoveBlockLeft()
 {
-	if (gameOver) return;
-
 	curBlock.Move(0, -1);
 
 	// Wall collisions, undo block movement
@@ -124,8 +139,6 @@ void Game::MoveBlockLeft()
 // Moves the column of the current block 1 cell to the right
 void Game::MoveBlockRight()
 {
-	if (gameOver) return;
-
 	curBlock.Move(0, 1);
 
 	// Wall collisions, undo block movement
@@ -139,8 +152,6 @@ void Game::MoveBlockRight()
 // Moves the row of the current block 1 cell downwards and returns true if move is allowed/successful
 bool Game::MoveBlockDown(bool isSoftDrop, bool isHardDrop)
 {
-	if (gameOver) return false;
-
 	curBlock.Move(1, 0);
 
 	// Wall collisions, undo block movement
@@ -156,10 +167,8 @@ bool Game::MoveBlockDown(bool isSoftDrop, bool isHardDrop)
 }
 
 // Moves the block to floor by repeatedly moving it down 1 cell for the number of rows in the grid
-void Game::MoveBlockToFloor()
+void Game::HardDropBlock()
 {
-	if (gameOver) return;
-
 	for (int i = 0; i < grid.GetGridHeight() - 2; i++) {
 		if (MoveBlockDown(false, true) == false) break;
 	}
@@ -179,8 +188,6 @@ bool Game::IsBlockOutside(Block block)
 // Rotates the block clockwise or counter clockwise and undoes the rotation if new block cell positions are outside the grid
 void Game::RotateBlock(bool IsClockwise)
 {
-	if (gameOver) return;
-
 	curBlock.Rotate(IsClockwise);
 	if (IsBlockOutside(curBlock) || !BlockFits(curBlock)) curBlock.Rotate(!IsClockwise); // Undo rotation if block is outside grid
 	else { // If rotation is allowed
@@ -195,6 +202,8 @@ void Game::RotateBlock(bool IsClockwise)
 // Copies the current block cells onto the grid, spawns a new block, and clears any full rows
 void Game::LockBlock()
 {
+	if (gameOver) return; // Prevent blocks from spawning after game over
+
 	// Copy block filled cell positions onto grid
 	std::vector<Position> filledCells = curBlock.GetCellPositions();
 	for (Position cell : filledCells) {
@@ -202,22 +211,18 @@ void Game::LockBlock()
 	}
 
 	// Get new block and make sure it fits in grid when spawned
-	curBlock = nextBlock;
-	ghostBlock = nextBlock;
-	ghostBlock.isGhostBlock = true;
-	UpdateGhostBlockRow();
+	SpawnNewBlock();
 	if (BlockFits(curBlock) == false) {
 		gameOver = true;
 	}
 
-	// Spawn next block and clear any full rows
-	nextBlock = GetRandomBlock();
 	int rowsCleared = grid.ClearFullRows();
 
 	if (rowsCleared > 0) {
 		PlaySound(clearSfx);
 		UpdateScore(rowsCleared, 0);
 	}
+	usedHold = false; // Allow player to hold block again
 }
 
 // Returns true if all cells in the current block are empty in the grid (it fits in current position on grid)
@@ -241,6 +246,9 @@ void Game::Reset()
 	ghostBlock.isGhostBlock = true;
 	UpdateGhostBlockRow();
 	nextBlock = GetRandomBlock();
+	holdBlock.isHoldBlock = true;
+	holdBlock.isHoldBlockSet = false;
+	usedHold = false;
 	score = 0;
 }
 
@@ -279,4 +287,44 @@ void Game::UpdateGhostBlockRow()
 		ghostBlock.Move(1, 0);
 	}
 	ghostBlock.Move(-1, 0);
+}
+
+// Swaps the current block with the hold block and updates the ghost and next block
+void Game::HoldBlock()
+{
+	if (usedHold) return;
+	usedHold = true;
+
+	// If hold block is empty, put current block there and spawn new block
+	if (holdBlock.isHoldBlockSet == false) {
+		holdBlock.isHoldBlockSet = true;
+		holdBlock = curBlock;
+		holdBlock.Reset();
+		SpawnNewBlock();
+		return;
+	}
+
+	// Swap current and hold block
+	Block tempHoldBlock = holdBlock;
+	holdBlock = curBlock;
+	curBlock = tempHoldBlock;
+	holdBlock.Reset();
+	holdBlock.isHoldBlockSet = true;
+	curBlock.MoveToStartPosition();
+	
+	ghostBlock = curBlock;
+	ghostBlock.isGhostBlock = true;
+	UpdateGhostBlockRow();
+}
+
+// Spawns a new block and updates the ghost and next block
+void Game::SpawnNewBlock()
+{
+	curBlock = nextBlock;
+
+	ghostBlock = curBlock;
+	ghostBlock.isGhostBlock = true;
+	UpdateGhostBlockRow();
+
+	nextBlock = GetRandomBlock();
 }

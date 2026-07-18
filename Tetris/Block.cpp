@@ -4,10 +4,8 @@
 Block::Block()
 {
 	cellSize = 30;
-	rotationState = 0;
 	colors = GetCellColors();
-	rowOffset = 0;
-	colOffset = 0;
+	Reset();
 	isGhostBlock = false;
 }
 
@@ -63,4 +61,30 @@ std::vector<Position> Block::GetCellPositions()
 		movedTiles.push_back(newPos);
 	}
 	return movedTiles;
+}
+
+// Resets row/col offset and rotation state to 0 (for hold block)
+void Block::Reset()
+{
+	rowOffset = 0;
+	colOffset = 0;
+	rotationState = 0;
+}
+
+// Resets block and moves it to the start position in the middle top of the grid
+void Block::MoveToStartPosition()
+{
+	Reset();
+
+	switch (id) {
+		case 3:
+			Move(-1, 3);
+			break;
+		case 4:
+			Move(0, 4);
+			break;
+		default:
+			Move(0, 3);
+			break;
+	}
 }
