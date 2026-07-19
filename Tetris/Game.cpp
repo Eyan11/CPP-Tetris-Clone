@@ -162,7 +162,7 @@ bool Game::MoveBlockDown(bool isSoftDrop, bool isHardDrop)
 	}
 
 	if (isHardDrop) UpdateScore(0, 2); // 2 points for pressing up key per grid space dropped
-	else if (isSoftDrop) (UpdateScore(0, 1)); // 1 point for pressing down key per grid space dropped
+	else if (isSoftDrop) UpdateScore(0, 1); // 1 point for pressing down key per grid space dropped
 	return true;
 }
 
@@ -189,14 +189,32 @@ bool Game::IsBlockOutside(Block block)
 void Game::RotateBlock(bool IsClockwise)
 {
 	curBlock.Rotate(IsClockwise);
-	if (IsBlockOutside(curBlock) || !BlockFits(curBlock)) curBlock.Rotate(!IsClockwise); // Undo rotation if block is outside grid
-	else { // If rotation is allowed
-		PlaySound(rotateSfx);
-		ghostBlock.Rotate(IsClockwise);
-		UpdateGhostBlockRow();
+	if (IsBlockOutside(curBlock) || !BlockFits(curBlock)) {
+
+		// *** Try to wall kick the block into a position that fits in the grid ***
+		bool movedBlock = false;
+		for (Position move : curBlock.GetRotationOffsetPositions()) {
+			curBlock.Move(move.row, move.col);
+			// If move doesn't fit, undo the move
+			if (IsBlockOutside(curBlock) || !BlockFits(curBlock)) curBlock.Move(-move.row, -move.col);
+			// If move fits, have ghost block copy movement
+			else {
+				ghostBlock.Move(move.row, move.col);
+				movedBlock = true;
+				break;
+			}
+		}
+
+		// Undo rotation if block cannot fit in grid after rotation
+		if (movedBlock == false) {
+			curBlock.Rotate(!IsClockwise);
+			return;
+		}
 	}
 
-	// TODO: instead of undoing the rotation, move block away from boundary
+	PlaySound(rotateSfx);
+	ghostBlock.Rotate(IsClockwise);
+	UpdateGhostBlockRow();
 }
 
 // Copies the current block cells onto the grid, spawns a new block, and clears any full rows
@@ -221,6 +239,7 @@ void Game::LockBlock()
 	if (rowsCleared > 0) {
 		PlaySound(clearSfx);
 		UpdateScore(rowsCleared, 0);
+		UpdateGhostBlockRow(); // Prevent bug where ghost block is floating since row was cleared AFTER ghost block was updated
 	}
 	usedHold = false; // Allow player to hold block again
 }

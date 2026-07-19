@@ -15,6 +15,7 @@ public:
 	std::vector<Position> GetCellPositions();
 	void Reset();
 	void MoveToStartPosition();
+	std::vector<Position> GetRotationOffsetPositions();
 	int id; // type of block, initialized in child class
 	std::map<int, std::vector<Position>> cells; // map rotation state int to a vector filled cell indices (row, col)
 	bool isGhostBlock;
@@ -29,4 +30,6 @@ private:
 	int cellSize;
 	int rotationState; // 0-3 int for each block rotation (0, 90, 180, 270 degrees). Exception: O-block has only 1 rotation state
 	std::vector<Color> colors; // all possible block colors
+	std::vector<Position> rotationOffsetPositions; // Used for wall kick, stores the offset positions to try when rotating a block
+	std::vector<Position> rotationOffsetPositionsIBlock; // For I-block wall kick, stores the offset positions to try when rotating a block
 };
