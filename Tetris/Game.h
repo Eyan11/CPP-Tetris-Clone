@@ -13,6 +13,7 @@ public:
 	void HandleInput();
 	bool MoveBlockDown(bool isSoftDrop, bool isHardDrop);
 	void HardDropBlock();
+	void UpdateLockTime();
 	bool gameOver;
 	int score;
 	Music music;
@@ -20,7 +21,7 @@ public:
 private:
 	bool IsBlockOutside(Block block);
 	void RotateBlock(bool IsClockwise);
-	void LockBlock();
+	void LockBlock(bool forceLock);
 	bool BlockFits(Block block);
 	void Reset();
 	void UpdateScore(int linesCleared, int moveDownPoints);
@@ -31,6 +32,7 @@ private:
 	void MoveBlockRight();
 	void HoldBlock();
 	void SpawnNewBlock();
+	bool IsBlockGrounded();
 	std::vector<Block> blocks; // The pool of blocks to randomly choose from
 	Block curBlock;
 	Block nextBlock;
@@ -40,4 +42,9 @@ private:
 	Sound rotateSfx;
 	Sound clearSfx;
 	bool usedHold;
+	float lockDelay; // Delay in seconds before locking block in place after it hits the floor
+	double lockStartTime; // Time when the current block first hit the floor
+	int numLockMoves; // Track the number of moves/rotations made by the current block while on the floor
+	int maxLockMoves; // Maximum number of moves/rotations allowed while on the floor before locking
+	bool isBlockGrounded; // Track whether the current block is grounded (touching the floor or another block)
 };

@@ -35,6 +35,7 @@ int main()
         // *** Game Loop Logic
         UpdateMusicStream(game.music);
         game.HandleInput();
+        game.UpdateLockTime();
         if (OnIntervalTriggered(0.2)) game.MoveBlockDown(false, false);
 
         // *** Draw
@@ -67,4 +68,3 @@ int main()
     CloseWindow();
     return 0;
 }
-
