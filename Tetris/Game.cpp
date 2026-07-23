@@ -204,24 +204,19 @@ void Game::MoveBlockLeft()
 {
 	if (IsBlockGrounded()) { // Count as locked move if grounded BEFORE the movement happens
 		numLockMoves++;
-		lockStartTime = GetTime();
 	}
 
 	curBlock.Move(0, -1);
 
 	// Wall collisions, undo block movement and don't count it as a lock move
 	if (IsBlockOutside(curBlock) || !BlockFits(curBlock)) {
-		numLockMoves--;
 		curBlock.Move(0, 1);
+		numLockMoves--;
 	}
 	else { // If move allowed, have ghost block copy the movement
 		ghostBlock.Move(0, -1);
 		UpdateGhostBlockRow();
-
-		if (IsBlockGrounded()) {
-			numLockMoves++;
-			lockStartTime = GetTime();
-		}
+		lockStartTime = GetTime(); // Only reset timer if block actually moved
 	}
 }
 
@@ -230,7 +225,6 @@ void Game::MoveBlockRight()
 {
 	if (IsBlockGrounded()) { // Count as locked move if grounded BEFORE the movement happens
 		numLockMoves++;
-		lockStartTime = GetTime();
 	}
 
 	curBlock.Move(0, 1);
@@ -243,6 +237,7 @@ void Game::MoveBlockRight()
 	else { // If move allowed, have ghost block copy the movement
 		ghostBlock.Move(0, 1);
 		UpdateGhostBlockRow();
+		lockStartTime = GetTime(); // Only reset timer if block actually moved
 	}
 }
 
@@ -299,7 +294,6 @@ void Game::RotateBlock(bool IsClockwise)
 {
 	if (IsBlockGrounded()) { // Count as locked move if grounded BEFORE the movement happens
 		numLockMoves++;
-		lockStartTime = GetTime();
 	}
 
 	curBlock.Rotate(IsClockwise);
@@ -330,6 +324,7 @@ void Game::RotateBlock(bool IsClockwise)
 	PlaySound(rotateSfx);
 	ghostBlock.Rotate(IsClockwise);
 	UpdateGhostBlockRow();
+	lockStartTime = GetTime(); // Only reset timer if block actually moved
 }
 
 // Copies the current block cells onto the grid, spawns a new block, and clears any full rows
