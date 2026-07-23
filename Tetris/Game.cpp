@@ -2,9 +2,10 @@
 #include <iostream>
 #include "Game.h"
 
-Game::Game() // Constructor
+Game::Game(int windowWidth, int windowHeight) // Constructor
 {
 	grid = Grid();
+	grid.CenterGridInWindow(windowWidth, windowHeight);
 	blocks = GetAllBlocks();
 	gameOver = false;
 	score = 0;
@@ -27,6 +28,59 @@ Game::Game() // Constructor
 	maxLockMoves = 15;
 	lockStartTime = 0;
 	isBlockGrounded = false;
+
+	linesCleared = 0;
+	curLevel = 1;
+	score = 0;
+	highScore = 0;
+
+	// *** UI
+	gridAnchorPos = { grid.GetGridCoordinateX(true), grid.GetGridCoordinateY(true) };
+	font = LoadFontEx("Assets/monogram.ttf", 64, 0, 0);
+	int textSeparationX = 15;
+	int textSeparationY = 35;
+
+	Vector2 anchorPos = { grid.GetGridCoordinateX(false) + textSeparationX, gridAnchorPos.y };
+	nextText = TextUI(font, "Next", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Top);
+	nextBlockAnchorPos = { anchorPos.x, anchorPos.y + 50 };
+
+	anchorPos.y = grid.GetGridCoordinateY(false);
+	highScoreText = TextUI(font, "0", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Bottom);
+
+	anchorPos.y -= textSeparationY;
+	highScoreHeaderText = TextUI(font, "High Score", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Bottom);
+
+	anchorPos.y -= textSeparationY;
+	scoreText = TextUI(font, "0", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Bottom);
+
+	anchorPos.y -= textSeparationY;
+	scoreHeaderText = TextUI(font, "Score", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Bottom);
+
+	anchorPos.y -= textSeparationY;
+	timeText = TextUI(font, "00:00", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Bottom);
+
+	anchorPos.y -= textSeparationY;
+	timeHeaderText = TextUI(font, "Time", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Bottom);
+	
+	anchorPos = { gridAnchorPos.x - textSeparationX, gridAnchorPos.y };
+	holdText = TextUI(font, "Hold", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Right, TextUI::VerticalAlignment::Top);
+	holdBlockAnchorPos = { anchorPos.x - (30 * 3), anchorPos.y + 50 };
+
+	anchorPos.y = grid.GetGridCoordinateY(false);
+	linesText = TextUI(font, "0", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Right, TextUI::VerticalAlignment::Bottom);
+
+	anchorPos.y -= textSeparationY;
+	linesHeaderText = TextUI(font, "Lines", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Right, TextUI::VerticalAlignment::Bottom);
+
+	anchorPos.y -= textSeparationY;
+	levelText = TextUI(font, "1", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Right, TextUI::VerticalAlignment::Bottom);
+
+	anchorPos.y -= textSeparationY;
+	levelHeaderText = TextUI(font, "Level", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Right, TextUI::VerticalAlignment::Bottom);
+
+	anchorPos.y = gridAnchorPos.y - textSeparationY;
+	anchorPos.x = gridAnchorPos.x + (grid.GetGridCoordinateX(false) - gridAnchorPos.x) / 2;
+	gameOverText = TextUI(font, "GAME OVER", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Center, TextUI::VerticalAlignment::Middle);
 }
 
 Game::~Game() // Destructor
@@ -59,35 +113,51 @@ std::vector<Block> Game::GetAllBlocks()
 void Game::Draw()
 {
 	grid.Draw();
-	curBlock.Draw(11, 11);
+	curBlock.Draw(gridAnchorPos.x, gridAnchorPos.y);
+	if(!gameOver) ghostBlock.Draw(gridAnchorPos.x, gridAnchorPos.y);
 
-	if(!gameOver) ghostBlock.Draw(11, 11);
-
+	// Next Block
+	nextText.Draw();
 	switch (nextBlock.id) { // Make sure all block types are centered
 		case 3: // I block
-			nextBlock.Draw(255, 225);
+			nextBlock.Draw(nextBlockAnchorPos.x, nextBlockAnchorPos.y - 15);
 			break;
 		case 4: // O block
-			nextBlock.Draw(255, 215);
+			nextBlock.Draw(nextBlockAnchorPos.x + 15, nextBlockAnchorPos.y);
 			break;
 		default:
-			nextBlock.Draw(270, 205);
+			nextBlock.Draw(nextBlockAnchorPos.x, nextBlockAnchorPos.y);
 			break;
 	}
 
+	// Hold Block
+	holdText.Draw();
 	if (holdBlock.isHoldBlockSet) {
 		switch (holdBlock.id) { // Make sure all block types are centered
 			case 3: // I block
-				holdBlock.Draw(345, 430);
+				holdBlock.Draw(holdBlockAnchorPos.x - 30, holdBlockAnchorPos.y - 15);
 				break;
 			case 4: // O block
-				holdBlock.Draw(375, 450);
+				holdBlock.Draw(holdBlockAnchorPos.x + 15, holdBlockAnchorPos.y);
 				break;
 			default:
-				holdBlock.Draw(360, 440);
+				holdBlock.Draw(holdBlockAnchorPos.x, holdBlockAnchorPos.y);
 				break;
 		}
 	}
+
+
+	levelText.Draw();
+	levelHeaderText.Draw();
+	linesText.Draw();
+	linesHeaderText.Draw();
+	timeText.Draw();
+	timeHeaderText.Draw();
+	scoreText.Draw();
+	scoreHeaderText.Draw();
+	highScoreText.Draw();
+	highScoreHeaderText.Draw();
+	if (gameOver) gameOverText.Draw();
 }
 
 // Checks for input and calls respective method to handle it
@@ -286,8 +356,12 @@ void Game::LockBlock(bool forceLock)
 
 	// Get new block and make sure it fits in grid when spawned
 	SpawnNewBlock();
-	if (BlockFits(curBlock) == false) {
+	if (BlockFits(curBlock) == false) { // Trigger Game Over
 		gameOver = true;
+		if (score > highScore) {
+			highScore = score;
+			highScoreText.SetText(std::to_string(highScore));
+		}
 	}
 
 	int rowsCleared = grid.ClearFullRows();
@@ -296,6 +370,12 @@ void Game::LockBlock(bool forceLock)
 		PlaySound(clearSfx);
 		UpdateScore(rowsCleared, 0);
 		UpdateGhostBlockRow(); // Prevent bug where ghost block is floating since row was cleared AFTER ghost block was updated
+		linesCleared += rowsCleared;
+		linesText.SetText(std::to_string(linesCleared));
+		if (linesCleared >= curLevel * 10) {
+			curLevel++;
+			levelText.SetText(std::to_string(curLevel));
+		}
 	}
 	usedHold = false; // Allow player to hold block again
 }
@@ -317,6 +397,7 @@ void Game::Reset()
 	grid.Initialize(); // Clear blocks on grid
 	blocks = GetAllBlocks(); // Resets the pool of blocks to randomly choose from
 	curBlock = GetRandomBlock();
+	curBlock.MoveToStartPosition();
 	ghostBlock = curBlock;
 	ghostBlock.isGhostBlock = true;
 	UpdateGhostBlockRow();
@@ -351,6 +432,7 @@ void Game::UpdateScore(int linesCleared, int moveDownPoints)
 	}
 
 	score += moveDownPoints;
+	scoreText.SetText(std::to_string(score));
 }
 
 // Updates the row (or height) of the ghost block to accurately display the position of the current block if it were to move straight down
@@ -386,9 +468,9 @@ void Game::HoldBlock()
 	Block tempHoldBlock = holdBlock;
 	holdBlock = curBlock;
 	curBlock = tempHoldBlock;
+	curBlock.MoveToStartPosition();
 	holdBlock.Reset();
 	holdBlock.isHoldBlockSet = true;
-	curBlock.MoveToStartPosition();
 	
 	ghostBlock = curBlock;
 	ghostBlock.isGhostBlock = true;
@@ -404,6 +486,7 @@ void Game::SpawnNewBlock()
 	isBlockGrounded = false;
 
 	curBlock = nextBlock;
+	curBlock.MoveToStartPosition();
 
 	ghostBlock = curBlock;
 	ghostBlock.isGhostBlock = true;

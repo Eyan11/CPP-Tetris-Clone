@@ -133,6 +133,7 @@
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Position.cpp" />
     <ClCompile Include="Tetris.cpp" />
+    <ClCompile Include="TextUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Block.h" />
@@ -140,6 +141,7 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Position.h" />
+    <ClInclude Include="TextUI.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

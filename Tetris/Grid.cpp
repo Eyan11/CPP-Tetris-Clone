@@ -4,11 +4,12 @@
 
 
 // Constructor, initializes variables
-Grid::Grid() 
+Grid::Grid()
 {
 	numRows = 20;
 	numCols = 10;
 	cellSize = 30;
+	cellMargin = 1;
 	Initialize();
 	colors = GetCellColors(); // From Colors class
 }
@@ -23,16 +24,20 @@ void Grid::Initialize()
 	}
 }
 
+// Public setter method for grid origin coordinates (top left corner of grid)
+void Grid::CenterGridInWindow(int windowWidth, int windowHeight)
+{
+	gridAnchorPos = { float((windowWidth - (cellSize * numCols)) / 2.0), float((windowHeight - (cellSize * numRows)) / 2.0) };
+}
+
 // Draws all grid colors with a margin to show grid outline
 void Grid::Draw()
 {
-	int gridMargin = 11;
-	int cellMargin = 1;
 	int cellValue = 0;
 	for (int row = 0; row < numRows; row++) {
 		for (int col = 0; col < numCols; col++) {
 			cellValue = grid[row][col];
-			DrawRectangle(col * cellSize + gridMargin, row * cellSize + gridMargin,
+			DrawRectangle(col * cellSize + gridAnchorPos.x, row * cellSize + gridAnchorPos.y,
 				cellSize - cellMargin, cellSize - cellMargin, colors[cellValue]);
 		}
 	}
@@ -70,6 +75,20 @@ int Grid::ClearFullRows()
 	return completed;
 }
 
+// Returns x coordinate of grid's left or right edge
+float Grid::GetGridCoordinateX(bool isLeftEdge)
+{
+	if (isLeftEdge) return gridAnchorPos.x;
+	else return gridAnchorPos.x + (cellSize * numCols);
+}
+
+// Returns y coordinate of grid's top or bottom edge
+float Grid::GetGridCoordinateY(bool isTopEdge) 
+{
+	if (isTopEdge) return gridAnchorPos.y;
+	else return gridAnchorPos.y + (cellSize * numRows);
+}
+
 // Returns true if there are no blocks in the row (all cells in row are non-zero)
 bool Grid::IsRowFull(int row)
 {
@@ -93,16 +112,5 @@ void Grid::MoveRowDown(int row, int numRows)
 	for (int col = 0; col < numCols; col++) {
 		grid[row + numRows][col] = grid[row][col];
 		grid[row][col] = 0;
-	}
-}
-
-// Prints grid 2d array
-void Grid::Print()
-{
-	for (int row = 0; row < numRows; row++) {
-		for (int col = 0; col < numCols; col++) {
-			std::cout << grid[row][col] << " ";
-		}
-		std::cout << std::endl;
 	}
 }

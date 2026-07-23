@@ -3,11 +3,12 @@
 #include <vector>
 #include "grid.h"
 #include "blocks.cpp"
+#include "TextUI.h"
 
 class Game
 {
 public:
-	Game();
+	Game(int windowWidth, int windowHeight);
 	~Game();
 	void Draw();
 	void HandleInput();
@@ -15,7 +16,6 @@ public:
 	void HardDropBlock();
 	void UpdateLockTime();
 	bool gameOver;
-	int score;
 	Music music;
 
 private:
@@ -47,4 +47,29 @@ private:
 	int numLockMoves; // Track the number of moves/rotations made by the current block while on the floor
 	int maxLockMoves; // Maximum number of moves/rotations allowed while on the floor before locking
 	bool isBlockGrounded; // Track whether the current block is grounded (touching the floor or another block)
+
+	// Stats
+	int linesCleared;
+	int curLevel;
+	int score;
+	int highScore;
+
+	// Text
+	Font font;
+	TextUI nextText;
+	TextUI timeHeaderText;
+	TextUI timeText;
+	TextUI scoreHeaderText;
+	TextUI scoreText;
+	TextUI highScoreHeaderText;
+	TextUI highScoreText;
+	TextUI holdText;
+	TextUI levelHeaderText;
+	TextUI levelText;
+	TextUI linesHeaderText;
+	TextUI linesText;
+	TextUI gameOverText;
+	Vector2 nextBlockAnchorPos;
+	Vector2 holdBlockAnchorPos;
+	Vector2 gridAnchorPos;
 };

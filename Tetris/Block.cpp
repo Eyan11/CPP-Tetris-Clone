@@ -12,7 +12,7 @@ Block::Block()
 }
 
 // Draws all filled cells with margin given its block id and rotation state
-void Block::Draw(int offsetX, int offsetY)
+void Block::Draw(float offsetX, float offsetY)
 {
 	int cellMargin = 1;
 	std::vector<Position> filledCells = GetCellPositions(); // Get cells to draw using offset from movement
@@ -96,4 +96,5 @@ std::vector<Position> Block::GetRotationOffsetPositions()
 {
 	if (id == 3) return rotationOffsetPositionsIBlock;
 	else if (id != 4) return rotationOffsetPositions; // O-block has no wall kick offsets
+	return { {0, 0} };
 }
