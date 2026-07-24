@@ -7,7 +7,7 @@
 
 int windowWidth = 900;
 int windowHeight = 800;
-Color backgroundColor = { 44, 44, 127, 255 };
+Color backgroundColor = { 0, 0, 10, 255 };
 
 int main()
 {

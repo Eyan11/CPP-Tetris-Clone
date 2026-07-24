@@ -23,10 +23,11 @@ Game::Game(int windowWidth, int windowHeight) // Constructor
 	rotateSfx = LoadSound("Assets/Sounds/rotate.mp3");
 	clearSfx = LoadSound("Assets/Sounds/clear.mp3");
 
+	// Locking
 	lockDelay = 0.5;
 	numLockMoves = 0;
 	maxLockMoves = 15;
-	lockStartTime = 0;
+	lockStartTime = std::numeric_limits<double>::max();;
 	isBlockGrounded = false;
 
 	// Stats
@@ -476,8 +477,10 @@ void Game::Reset()
 	holdBlock.isHoldBlock = true;
 	holdBlock.isHoldBlockSet = false;
 	usedHold = false;
+
+	// Locking
 	numLockMoves = 0;
-	lockStartTime = 0;
+	lockStartTime = std::numeric_limits<double>::max();
 	isBlockGrounded = false;
 
 	// Stats
@@ -570,7 +573,7 @@ void Game::SpawnNewBlock()
 {
 	// Reset Variables for new block
 	numLockMoves = 0;
-	lockStartTime = 0;
+	lockStartTime = std::numeric_limits<double>::max();;
 	isBlockGrounded = false;
 
 	curBlock = nextBlock;

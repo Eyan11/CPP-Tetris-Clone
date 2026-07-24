@@ -42,6 +42,8 @@ private:
 	Sound rotateSfx;
 	Sound clearSfx;
 	bool usedHold;
+
+	// Locking
 	float lockDelay; // Delay in seconds before locking block in place after it hits the floor
 	double lockStartTime; // Time when the current block first hit the floor
 	int numLockMoves; // Track the number of moves/rotations made by the current block while on the floor
