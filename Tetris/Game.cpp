@@ -33,6 +33,9 @@ Game::Game(int windowWidth, int windowHeight) // Constructor
 	curLevel = 1;
 	score = 0;
 	highScore = 0;
+	minutesElapsed = 0;
+	secondsElapsed = 0;
+	lastUpdateTime = GetTime();
 
 	// *** UI
 	gridAnchorPos = { grid.GetGridCoordinateX(true), grid.GetGridCoordinateY(true) };
@@ -268,9 +271,23 @@ void Game::HardDropBlock()
 	}
 }
 
-// Updates the lock timer and locks the block in place if the lock delay has been reached
-void Game::UpdateLockTime()
+// Updates the game timer and lock timer, if the lock delay is reached the block is locked in grid
+void Game::Update()
 {
+	if (gameOver) return;
+
+	// Update Timer
+	secondsElapsed += GetTime() - lastUpdateTime;
+	if (secondsElapsed >= 60) {
+		minutesElapsed++;
+		secondsElapsed -= 60;
+	}
+	lastUpdateTime = GetTime();
+
+	// Update time text with format mm::ss
+	timeText.SetText((minutesElapsed < 10 ? "0" : "") + std::to_string(minutesElapsed) + ":" + (secondsElapsed < 10 ? "0" : "") + std::to_string((int)secondsElapsed));
+
+	// Update lock timer
 	if (isBlockGrounded == false) return; // Only update lock time if block is grounded
 
 	if (GetTime() - lockStartTime >= lockDelay) {
@@ -400,10 +417,20 @@ void Game::Reset()
 	holdBlock.isHoldBlock = true;
 	holdBlock.isHoldBlockSet = false;
 	usedHold = false;
-	score = 0;
 	numLockMoves = 0;
 	lockStartTime = 0;
 	isBlockGrounded = false;
+
+	// Stats
+	linesCleared = 0;
+	linesText.SetText(std::to_string(linesCleared));
+	curLevel = 1;
+	levelText.SetText(std::to_string(curLevel));
+	score = 0;
+	scoreText.SetText(std::to_string(score));
+	minutesElapsed = 0;
+	secondsElapsed = 0;
+	lastUpdateTime = GetTime();
 }
 
 // Updates the score variable depending on how many lines were cleared or how many times the block has been moved down

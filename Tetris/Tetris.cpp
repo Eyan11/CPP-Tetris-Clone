@@ -34,7 +34,7 @@ int main()
         // *** Game Loop Logic
         UpdateMusicStream(game.music);
         game.HandleInput();
-        game.UpdateLockTime();
+        game.Update();
         if (OnIntervalTriggered(0.2)) game.MoveBlockDown(false, false);
 
         // *** Draw

@@ -14,7 +14,7 @@ public:
 	void HandleInput();
 	bool MoveBlockDown(bool isSoftDrop, bool isHardDrop);
 	void HardDropBlock();
-	void UpdateLockTime();
+	void Update();
 	bool gameOver;
 	Music music;
 
@@ -53,6 +53,9 @@ private:
 	int curLevel;
 	int score;
 	int highScore;
+	int minutesElapsed;
+	float secondsElapsed;
+	float lastUpdateTime;
 
 	// Text
 	Font font;
