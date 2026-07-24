@@ -19,10 +19,8 @@ public:
 	Music music;
 
 private:
-	bool IsBlockOutside(Block block);
 	void RotateBlock(bool IsClockwise);
 	void LockBlock(bool forceLock);
-	bool BlockFits(Block block);
 	void Reset();
 	void UpdateScore(int linesCleared, int moveDownPoints);
 	void UpdateGhostBlockRow();
@@ -32,6 +30,7 @@ private:
 	void MoveBlockRight();
 	void HoldBlock();
 	void SpawnNewBlock();
+	bool BlockFits(Block block, int rowOffset, int colOffset);
 	bool UpdateIsBlockGrounded();
 	std::vector<Block> blocks; // The pool of blocks to randomly choose from
 	Block curBlock;
