@@ -35,7 +35,10 @@ Game::Game(int windowWidth, int windowHeight) // Constructor
 	highScore = 0;
 	minutesElapsed = 0;
 	secondsElapsed = 0;
+	gravityTimer = 0;
+	gravityInterval = pow((0.8 - ((curLevel - 1) * 0.007)), curLevel - 1); // Gravity interval formula from NES Tetris))
 	lastUpdateTime = GetTime();
+
 
 	// *** UI
 	gridAnchorPos = { grid.GetGridCoordinateX(true), grid.GetGridCoordinateY(true) };
@@ -282,10 +285,18 @@ void Game::Update()
 		minutesElapsed++;
 		secondsElapsed -= 60;
 	}
-	lastUpdateTime = GetTime();
 
 	// Update time text with format mm::ss
 	timeText.SetText((minutesElapsed < 10 ? "0" : "") + std::to_string(minutesElapsed) + ":" + (secondsElapsed < 10 ? "0" : "") + std::to_string((int)secondsElapsed));
+
+	// Gravity Timer
+	gravityTimer += GetTime() - lastUpdateTime;
+	while (gravityTimer >= gravityInterval) { // While loop in case it misses a gravity interval due to low FPS
+		gravityTimer -= gravityInterval;
+		MoveBlockDown(false, false);
+	}
+
+	lastUpdateTime = GetTime();
 
 	// Update lock timer
 	if (isBlockGrounded == false) return; // Only update lock time if block is grounded
@@ -384,9 +395,12 @@ void Game::LockBlock(bool forceLock)
 		UpdateGhostBlockRow(); // Prevent bug where ghost block is floating since row was cleared AFTER ghost block was updated
 		linesCleared += rowsCleared;
 		linesText.SetText(std::to_string(linesCleared));
+
+		// Trigger level up
 		if (linesCleared >= curLevel * 10) {
 			curLevel++;
 			levelText.SetText(std::to_string(curLevel));
+			gravityInterval = pow((0.8 - ((curLevel - 1) * 0.007)), curLevel - 1); // Gravity interval formula from NES Tetris))
 		}
 	}
 	usedHold = false; // Allow player to hold block again
@@ -430,6 +444,8 @@ void Game::Reset()
 	scoreText.SetText(std::to_string(score));
 	minutesElapsed = 0;
 	secondsElapsed = 0;
+	gravityTimer = 0;
+	gravityInterval = pow((0.8 - ((curLevel - 1) * 0.007)), curLevel - 1); // Gravity interval formula from NES Tetris))
 	lastUpdateTime = GetTime();
 }
 

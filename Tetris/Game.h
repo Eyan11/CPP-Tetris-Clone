@@ -55,7 +55,9 @@ private:
 	int highScore;
 	int minutesElapsed;
 	float secondsElapsed;
-	float lastUpdateTime;
+	double gravityTimer;
+	double gravityInterval; // Time interval for automatic downward movement of the block
+	double lastUpdateTime;
 
 	// Text
 	Font font;

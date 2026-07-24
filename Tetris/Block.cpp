@@ -7,8 +7,9 @@ Block::Block()
 	colors = GetCellColors();
 	Reset();
 	isGhostBlock = false;
-	rotationOffsetPositions = { {-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {-1, 1}, {1, -1}, {1, 1} };
-	rotationOffsetPositionsIBlock = { {-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {-1, 1}, {1, -1}, {1, 1}, {-2, 0}, {2, 0}, {0, -2}, {0, 2}, {-2, -2}, {-2, 2}, {2, -2}, {2, 2} };
+	// Not sure what the official order is, but first try to go down, the left/right, then up.
+	rotationOffsetPositions = { {0, -1}, {-1, -1}, {1, -1}, {-1, 0}, {1, 0}, {0, 1}, {-1, 1}, {1, 1} };
+	rotationOffsetPositionsIBlock = { {0, -1}, {-1, -1}, {1, -1}, {0, -2}, {-2, -2}, {2, -2}, {-1, 0}, {1, 0}, {-2, 0}, {2, 0}, {0, 1}, {-1, 1}, {1, 1}, {0, 2}, {-2, 2}, {2, 2} };
 }
 
 // Draws all filled cells with margin given its block id and rotation state

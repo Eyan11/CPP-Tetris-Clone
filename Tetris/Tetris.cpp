@@ -5,21 +5,9 @@
 #include "Game.h"
 #include "Colors.h"
 
-double lastUpdateTime = 0;
 int windowWidth = 900;
 int windowHeight = 800;
 Color backgroundColor = { 44, 44, 127, 255 };
-
-// Returns true if "interval" amount of time has passed
-bool OnIntervalTriggered(double interval) 
-{
-    double curTime = GetTime();
-    if (curTime - lastUpdateTime >= interval) {
-        lastUpdateTime = curTime;
-        return true;
-    }
-    return false;
-}
 
 int main()
 {
@@ -35,7 +23,6 @@ int main()
         UpdateMusicStream(game.music);
         game.HandleInput();
         game.Update();
-        if (OnIntervalTriggered(0.2)) game.MoveBlockDown(false, false);
 
         // *** Draw
         BeginDrawing();
