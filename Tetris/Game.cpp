@@ -179,12 +179,12 @@ void Game::HandleInput()
 {
 	int keyPressed = GetKeyPressed();
 
-	if (gameOver && keyPressed != 0) Reset(); // If game over and any key is pressed, restart
+	if (gameOver && keyPressed != 0) { // Restart game
+		Reset();
+		return;
+	}
 
 	if (gameOver) return; // Prevent input when game is over
-
-	std::cout << "leftInputTimer = " << leftInputTimer << std::endl;
-	std::cout << "deltaTime = " << GetTime() - lastUpdateTime << std::endl;
 	
 	// *** On Input Pressed (the first frame of the input)
 	switch (keyPressed) 
@@ -198,7 +198,7 @@ void Game::HandleInput()
 			rightInputTimer += GetTime() - lastUpdateTime;
 			break;
 		case KEY_DOWN: // Move block down 1 cell
-			MoveBlockDown(true, false);
+			MoveBlockDown(true);
 			downInputTimer += GetTime() - lastUpdateTime;
 			break;
 
@@ -236,7 +236,7 @@ void Game::HandleInput()
 	if (IsKeyDown(KEY_DOWN)) { // Down key down
 		downInputTimer += GetTime() - lastUpdateTime;
 		while (downInputTimer >= inputInterval) {
-			MoveBlockDown(true, false);
+			MoveBlockDown(true);
 			downInputTimer -= inputInterval;
 		}
 	}
@@ -291,30 +291,38 @@ void Game::MoveBlockRight()
 }
 
 // Moves the row of the current block 1 cell downwards and returns true if move is allowed/successful
-bool Game::MoveBlockDown(bool isSoftDrop, bool isHardDrop)
+void Game::MoveBlockDown(bool isSoftDrop)
 {
 	curBlock.Move(1, 0);
 
 	// Wall collisions, undo block movement
 	if (IsBlockOutside(curBlock) || !BlockFits(curBlock)) {
 		curBlock.Move(-1, 0);
-		LockBlock(isHardDrop); // Stop block from moving and spawn next block
-		return false;
+		LockBlock(false); // Stop block from moving and spawn next block
+		return;
 	}
 	else
 		isBlockGrounded = false;
 
-	if (isHardDrop) UpdateScore(0, 2); // 2 points for pressing up key per grid space dropped
-	else if (isSoftDrop) UpdateScore(0, 1); // 1 point for pressing down key per grid space dropped
-	return true;
+	if (isSoftDrop) UpdateScore(0, 1); // 1 point for pressing down key per grid space dropped
+	return;
 }
 
 // Moves the block to floor by repeatedly moving it down 1 cell for the number of rows in the grid
 void Game::HardDropBlock()
 {
-	for (int i = 0; i < grid.GetGridHeight() - 2; i++) {
-		if (MoveBlockDown(false, true) == false) break;
+	// Calculate points based on distance dropped
+	int rowsDropped = ghostBlock.GetCellPositions()[0].row - curBlock.GetCellPositions()[0].row;
+	if (rowsDropped > 0) {
+		UpdateScore(0, rowsDropped * 2);
 	}
+
+	// Instantly snap current block to ghost block's position
+	curBlock = ghostBlock;
+	curBlock.isGhostBlock = false;
+
+	// Immediately force lock the block in place
+	LockBlock(true);
 }
 
 // Updates the game timer and lock timer, if the lock delay is reached the block is locked in grid
@@ -338,7 +346,7 @@ void Game::Update()
 	gravityTimer += GetTime() - lastUpdateTime;
 	while (gravityTimer >= gravityInterval) { // While loop in case it misses a gravity interval due to low FPS
 		gravityTimer -= gravityInterval;
-		MoveBlockDown(false, false);
+		MoveBlockDown(false);
 	}
 
 	lastUpdateTime = GetTime();
@@ -504,22 +512,22 @@ void Game::UpdateScore(int linesCleared, int moveDownPoints)
 {
 	switch (linesCleared) {
 		case 1:
-			score += 100;
+			score += 100 * curLevel;
 			break;
 		case 2:
-			score += 300;
+			score += 300 * curLevel;
 			break;
 		case 3:
-			score += 500;
+			score += 500 * curLevel;
 			break;
 		case 4:
-			score += 800;
+			score += 800 * curLevel;
 			break;
 		default:
 			break;
 	}
 
-	score += moveDownPoints;
+	score += moveDownPoints * curLevel;
 	scoreText.SetText(std::to_string(score));
 }
 

@@ -12,7 +12,7 @@ public:
 	~Game();
 	void Draw();
 	void HandleInput();
-	bool MoveBlockDown(bool isSoftDrop, bool isHardDrop);
+	void MoveBlockDown(bool isSoftDrop);
 	void HardDropBlock();
 	void Update();
 	bool gameOver;
