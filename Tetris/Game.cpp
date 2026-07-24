@@ -20,7 +20,7 @@ Game::Game(int windowWidth, int windowHeight) // Constructor
 	InitAudioDevice();
 	music = LoadMusicStream("Assets/Sounds/djartmusic-my-8-bit-hero.mp3");
 	PlayMusicStream(music);
-	SetMusicVolume(music, 0.2f);
+	SetMusicVolume(music, 0.1f);
 	rotateSfx = LoadSound("Assets/Sounds/rotate.mp3");
 	clearSfx = LoadSound("Assets/Sounds/clear.mp3");
 	levelUpSfx = LoadSound("Assets/Sounds/level_up.mp3");
@@ -47,58 +47,59 @@ Game::Game(int windowWidth, int windowHeight) // Constructor
 	downInputTimer = 0;
 	leftInputTimer = 0;
 	rightInputTimer = 0;
-	sideInputDelay = 0.2;
-	inputInterval = 0.065;
+	sideInputDelay = 0.2f;
+	inputInterval = 0.065f;
 	lastUpdateTime = GetTime();
 
 
 	// *** UI
 	gridAnchorPos = { grid.GetGridCoordinateX(true), grid.GetGridCoordinateY(true) };
-	font = LoadFontEx("Assets/monogram.ttf", 64, 0, 0);
+	font = LoadFontEx("Assets/Changa-SemiBold.ttf", 64, 0, 0);
+	fontSize = 64;
 	int textSeparationX = 15;
 	int textSeparationY = 35;
 
-	Vector2 anchorPos = { grid.GetGridCoordinateX(false) + textSeparationX, gridAnchorPos.y };
-	nextText = TextUI(font, "Next", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Top);
-	nextBlockAnchorPos = { anchorPos.x, anchorPos.y + 50 };
+	Vector2 anchorPos = { grid.GetGridCoordinateX(false) + textSeparationX, gridAnchorPos.y - 15 };
+	nextText = TextUI(font, "Next", anchorPos, fontSize, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Top);
+	nextBlockAnchorPos = { anchorPos.x, anchorPos.y + 60 };
 
 	anchorPos.y = grid.GetGridCoordinateY(false);
-	highScoreText = TextUI(font, "0", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Bottom);
+	highScoreText = TextUI(font, "0", anchorPos, fontSize, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Bottom);
 
 	anchorPos.y -= textSeparationY;
-	highScoreHeaderText = TextUI(font, "High Score", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Bottom);
+	highScoreHeaderText = TextUI(font, "High Score", anchorPos, fontSize, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Bottom);
 
 	anchorPos.y -= textSeparationY;
-	scoreText = TextUI(font, "0", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Bottom);
+	scoreText = TextUI(font, "0", anchorPos, fontSize, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Bottom);
 
 	anchorPos.y -= textSeparationY;
-	scoreHeaderText = TextUI(font, "Score", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Bottom);
+	scoreHeaderText = TextUI(font, "Score", anchorPos, fontSize, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Bottom);
 
 	anchorPos.y -= textSeparationY;
-	timeText = TextUI(font, "00:00", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Bottom);
+	timeText = TextUI(font, "00:00", anchorPos, fontSize, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Bottom);
 
 	anchorPos.y -= textSeparationY;
-	timeHeaderText = TextUI(font, "Time", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Bottom);
+	timeHeaderText = TextUI(font, "Time", anchorPos, fontSize, 2, WHITE, TextUI::HorizontalAlignment::Left, TextUI::VerticalAlignment::Bottom);
 	
-	anchorPos = { gridAnchorPos.x - textSeparationX, gridAnchorPos.y };
-	holdText = TextUI(font, "Hold", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Right, TextUI::VerticalAlignment::Top);
-	holdBlockAnchorPos = { anchorPos.x - (30 * 3), anchorPos.y + 50 };
+	anchorPos = { gridAnchorPos.x - textSeparationX, gridAnchorPos.y - 15 };
+	holdText = TextUI(font, "Hold", anchorPos, fontSize, 2, WHITE, TextUI::HorizontalAlignment::Right, TextUI::VerticalAlignment::Top);
+	holdBlockAnchorPos = { anchorPos.x - (30 * 3), anchorPos.y + 60 };
 
 	anchorPos.y = grid.GetGridCoordinateY(false);
-	linesText = TextUI(font, "0", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Right, TextUI::VerticalAlignment::Bottom);
+	linesText = TextUI(font, "0", anchorPos, fontSize, 2, WHITE, TextUI::HorizontalAlignment::Right, TextUI::VerticalAlignment::Bottom);
 
 	anchorPos.y -= textSeparationY;
-	linesHeaderText = TextUI(font, "Lines", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Right, TextUI::VerticalAlignment::Bottom);
+	linesHeaderText = TextUI(font, "Lines", anchorPos, fontSize, 2, WHITE, TextUI::HorizontalAlignment::Right, TextUI::VerticalAlignment::Bottom);
 
 	anchorPos.y -= textSeparationY;
-	levelText = TextUI(font, "1", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Right, TextUI::VerticalAlignment::Bottom);
+	levelText = TextUI(font, "1", anchorPos, fontSize, 2, WHITE, TextUI::HorizontalAlignment::Right, TextUI::VerticalAlignment::Bottom);
 
 	anchorPos.y -= textSeparationY;
-	levelHeaderText = TextUI(font, "Level", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Right, TextUI::VerticalAlignment::Bottom);
+	levelHeaderText = TextUI(font, "Level", anchorPos, fontSize, 2, WHITE, TextUI::HorizontalAlignment::Right, TextUI::VerticalAlignment::Bottom);
 
 	anchorPos.y = gridAnchorPos.y - textSeparationY;
 	anchorPos.x = gridAnchorPos.x + (grid.GetGridCoordinateX(false) - gridAnchorPos.x) / 2;
-	gameOverText = TextUI(font, "GAME OVER", anchorPos, 38, 2, WHITE, TextUI::HorizontalAlignment::Center, TextUI::VerticalAlignment::Middle);
+	gameOverText = TextUI(font, "GAME OVER", anchorPos, fontSize, 2, WHITE, TextUI::HorizontalAlignment::Center, TextUI::VerticalAlignment::Middle);
 }
 
 Game::~Game() // Destructor

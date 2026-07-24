@@ -72,6 +72,7 @@ private:
 
 	// Text
 	Font font;
+	int fontSize;
 	TextUI nextText;
 	TextUI timeHeaderText;
 	TextUI timeText;
