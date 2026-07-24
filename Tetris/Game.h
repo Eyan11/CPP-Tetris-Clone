@@ -32,20 +32,22 @@ private:
 	void MoveBlockRight();
 	void HoldBlock();
 	void SpawnNewBlock();
-	bool IsBlockGrounded();
+	bool UpdateIsBlockGrounded();
 	std::vector<Block> blocks; // The pool of blocks to randomly choose from
 	Block curBlock;
 	Block nextBlock;
 	Block ghostBlock;
 	Block holdBlock;
+	bool usedHold;
 	Grid grid;
 	Sound rotateSfx;
 	Sound clearSfx;
-	bool usedHold;
+	Sound levelUpSfx;
+	Sound hardDropSfx;
 
 	// Locking
 	float lockDelay; // Delay in seconds before locking block in place after it hits the floor
-	double lockStartTime; // Time when the current block first hit the floor
+	double groundedTime;
 	int numLockMoves; // Track the number of moves/rotations made by the current block while on the floor
 	int maxLockMoves; // Maximum number of moves/rotations allowed while on the floor before locking
 	bool isBlockGrounded; // Track whether the current block is grounded (touching the floor or another block)

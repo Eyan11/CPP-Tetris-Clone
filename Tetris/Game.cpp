@@ -18,16 +18,19 @@ Game::Game(int windowWidth, int windowHeight) // Constructor
 
 	// Sound
 	InitAudioDevice();
-	music = LoadMusicStream("Assets/Sounds/music.mp3");
+	music = LoadMusicStream("Assets/Sounds/djartmusic-my-8-bit-hero.mp3");
 	PlayMusicStream(music);
+	SetMusicVolume(music, 0.2f);
 	rotateSfx = LoadSound("Assets/Sounds/rotate.mp3");
 	clearSfx = LoadSound("Assets/Sounds/clear.mp3");
+	levelUpSfx = LoadSound("Assets/Sounds/level_up.mp3");
+	hardDropSfx = LoadSound("Assets/Sounds/hard_drop.mp3");
 
 	// Locking
 	lockDelay = 0.5;
 	numLockMoves = 0;
 	maxLockMoves = 15;
-	lockStartTime = std::numeric_limits<double>::max();;
+	groundedTime = 0;
 	isBlockGrounded = false;
 
 	// Stats
@@ -102,6 +105,8 @@ Game::~Game() // Destructor
 {
 	UnloadSound(rotateSfx);
 	UnloadSound(clearSfx);
+	UnloadSound(levelUpSfx);
+	UnloadSound(hardDropSfx);
 	UnloadMusicStream(music);
 	CloseAudioDevice();
 }
@@ -192,15 +197,15 @@ void Game::HandleInput()
 	{
 		case KEY_LEFT: // Move block left 1 cell
 			MoveBlockLeft();
-			leftInputTimer += GetTime() - lastUpdateTime;
+			leftInputTimer = GetTime() - lastUpdateTime;
 			break;
 		case KEY_RIGHT: // Move block right 1 cell
 			MoveBlockRight();
-			rightInputTimer += GetTime() - lastUpdateTime;
+			rightInputTimer = GetTime() - lastUpdateTime;
 			break;
 		case KEY_DOWN: // Move block down 1 cell
 			MoveBlockDown(true);
-			downInputTimer += GetTime() - lastUpdateTime;
+			downInputTimer = GetTime() - lastUpdateTime;
 			break;
 
 		case KEY_UP: // Rotate clockwise (right)
@@ -252,7 +257,6 @@ void Game::HandleInput()
 // Moves the column of the current block 1 cell to the left
 void Game::MoveBlockLeft()
 {
-	bool wasGrounded = IsBlockGrounded();
 	curBlock.Move(0, -1);
 
 	// Wall collisions, undo block movement and don't count it as a lock move
@@ -262,15 +266,14 @@ void Game::MoveBlockLeft()
 	else { // If move allowed, have ghost block copy the movement
 		ghostBlock.Move(0, -1);
 		UpdateGhostBlockRow();
-		if (numLockMoves < maxLockMoves)lockStartTime = GetTime(); // Only reset timer if block actually moved
-		if (wasGrounded) numLockMoves++; // Count as locked move if grounded BEFORE the movement happens
+		if (numLockMoves < maxLockMoves) groundedTime = 0; // Only reset timer if block actually moved
+		if (isBlockGrounded) numLockMoves++; // Count as locked move if grounded BEFORE the movement happens
 	}
 }
 
 // Moves the column of the current block 1 cell to the right
 void Game::MoveBlockRight()
 {
-	bool wasGrounded = IsBlockGrounded();
 	curBlock.Move(0, 1);
 
 	// Wall collisions, undo block movement and don't count it as a lock movem
@@ -280,32 +283,29 @@ void Game::MoveBlockRight()
 	else { // If move allowed, have ghost block copy the movement
 		ghostBlock.Move(0, 1);
 		UpdateGhostBlockRow();
-		if (numLockMoves < maxLockMoves)lockStartTime = GetTime(); // Only reset timer if block actually moved
-		if (wasGrounded) numLockMoves++; // Count as locked move if grounded BEFORE the movement happens
+		if (numLockMoves < maxLockMoves) groundedTime = 0; // Only reset timer if block actually moved
+		if (isBlockGrounded) numLockMoves++; // Count as locked move if grounded BEFORE the movement happens
 	}
 }
 
 // Moves the row of the current block 1 cell downwards and updates score for soft drops
 void Game::MoveBlockDown(bool isSoftDrop)
 {
-	curBlock.Move(1, 0);
-
-	// Wall collisions, undo block movement
-	if (IsBlockOutside(curBlock) || !BlockFits(curBlock)) {
-		curBlock.Move(-1, 0);
+	if (isBlockGrounded) {
 		LockBlock(false); // Stop block from moving and spawn next block
-		return;
 	}
-	else
-		isBlockGrounded = false;
-
-	if (isSoftDrop) UpdateScore(0, 1); // 1 point for pressing down key per grid space dropped
-	return;
+	else {
+		curBlock.Move(1, 0);
+		groundedTime = 0;
+		if (isSoftDrop) UpdateScore(0, 1); // 1 point for pressing down key per grid space dropped
+	}
 }
 
 // Moves the block to floor by repeatedly moving it down 1 cell for the number of rows in the grid
 void Game::HardDropBlock()
 {
+	PlaySound(hardDropSfx);
+
 	// Calculate points based on distance dropped
 	int rowsDropped = ghostBlock.GetCellPositions()[0].row - curBlock.GetCellPositions()[0].row;
 	if (rowsDropped > 0) {
@@ -317,12 +317,14 @@ void Game::HardDropBlock()
 	curBlock.isGhostBlock = false;
 
 	// Immediately force lock the block in place
+	UpdateIsBlockGrounded(); // Make sure isBlockGrounded is true before locking it
 	LockBlock(true);
 }
 
 // Updates the game timer and lock timer, if the lock delay is reached the block is locked in grid
 void Game::Update()
 {
+	UpdateIsBlockGrounded();
 	HandleInput();
 
 	if (gameOver) return;
@@ -344,12 +346,13 @@ void Game::Update()
 		MoveBlockDown(false);
 	}
 
-	lastUpdateTime = GetTime();
-
 	// Update lock timer
-	if (isBlockGrounded && GetTime() - lockStartTime >= lockDelay) {
-		LockBlock(true);
+	if (isBlockGrounded) {
+		groundedTime += GetTime() - lastUpdateTime;
+		if (groundedTime >= lockDelay) LockBlock(true);
 	}
+
+	lastUpdateTime = GetTime();
 }
 
 // Returns true if any cells in current block is outside the boundaries of the game grid
@@ -366,8 +369,7 @@ bool Game::IsBlockOutside(Block block)
 // Rotates the block clockwise or counter clockwise and undoes the rotation if new block cell positions are outside the grid
 void Game::RotateBlock(bool IsClockwise)
 {
-	bool wasGrounded = IsBlockGrounded();
-	if (wasGrounded && GetTime() - lockStartTime >= lockDelay) LockBlock(true); // Prevent infinite rotations since block can become ungrounded after rotation
+	if (isBlockGrounded && numLockMoves > maxLockMoves) LockBlock(true); // Prevent infinite rotations since block can become ungrounded after rotation
 
 	curBlock.Rotate(IsClockwise);
 	if (IsBlockOutside(curBlock) || !BlockFits(curBlock)) {
@@ -396,8 +398,8 @@ void Game::RotateBlock(bool IsClockwise)
 	PlaySound(rotateSfx);
 	ghostBlock.Rotate(IsClockwise);
 	UpdateGhostBlockRow();
-	if (numLockMoves < maxLockMoves) lockStartTime = GetTime(); // Only reset timer if block actually moved
-	if (wasGrounded) numLockMoves++; // Count as locked move if grounded BEFORE the rotation happens
+	if (numLockMoves < maxLockMoves) groundedTime = 0; // Only reset timer if block actually moved
+	if (isBlockGrounded) numLockMoves++; // Count as locked move if grounded BEFORE the rotation happens
 }
 
 // Copies the current block cells onto the grid, spawns a new block, and clears any full rows
@@ -405,17 +407,10 @@ void Game::RotateBlock(bool IsClockwise)
 void Game::LockBlock(bool forceLock)
 {
 	if (gameOver) return; // Prevent blocks from spawning after game over
-	if (IsBlockGrounded() == false) return; // Don't lock block if it is not grounded
+	if (isBlockGrounded == false) return; // Don't lock block if it is not grounded
 
 	// Don't count it as a lock if max lock moves and lock delay time has not been reached
-	if (!forceLock && numLockMoves < maxLockMoves) {
-		if (isBlockGrounded == false) {
-			isBlockGrounded = true;
-			lockStartTime = GetTime();
-			return;
-		}
-		if (GetTime() - lockStartTime < lockDelay) return;
-	}
+	if (!forceLock && numLockMoves < maxLockMoves && groundedTime < lockDelay) return;
 
 	// Copy block filled cell positions onto grid
 	std::vector<Position> filledCells = curBlock.GetCellPositions();
@@ -445,6 +440,7 @@ void Game::LockBlock(bool forceLock)
 		// Trigger level up
 		if (linesCleared >= curLevel * 10) {
 			curLevel++;
+			PlaySound(levelUpSfx);
 			levelText.SetText(std::to_string(curLevel));
 			gravityInterval = pow((0.8 - ((curLevel - 1) * 0.007)), curLevel - 1); // Gravity interval formula from NES Tetris))
 		}
@@ -480,7 +476,7 @@ void Game::Reset()
 
 	// Locking
 	numLockMoves = 0;
-	lockStartTime = std::numeric_limits<double>::max();
+	groundedTime = 0;
 	isBlockGrounded = false;
 
 	// Stats
@@ -573,7 +569,7 @@ void Game::SpawnNewBlock()
 {
 	// Reset Variables for new block
 	numLockMoves = 0;
-	lockStartTime = std::numeric_limits<double>::max();;
+	groundedTime = 0;
 	isBlockGrounded = false;
 
 	curBlock = nextBlock;
@@ -587,7 +583,7 @@ void Game::SpawnNewBlock()
 }
 
 // Updates and returns isBlockGrounded variable to track is the current block is touching the floor or another block.
-bool Game::IsBlockGrounded()
+bool Game::UpdateIsBlockGrounded()
 {
 	curBlock.Move(1, 0);
 	if (!IsBlockOutside(curBlock) && BlockFits(curBlock)) isBlockGrounded = false;
