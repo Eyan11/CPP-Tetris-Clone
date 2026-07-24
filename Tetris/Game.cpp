@@ -29,14 +29,22 @@ Game::Game(int windowWidth, int windowHeight) // Constructor
 	lockStartTime = 0;
 	isBlockGrounded = false;
 
+	// Stats
 	linesCleared = 0;
 	curLevel = 1;
 	score = 0;
 	highScore = 0;
+
+	// Timers
 	minutesElapsed = 0;
 	secondsElapsed = 0;
 	gravityTimer = 0;
 	gravityInterval = pow((0.8 - ((curLevel - 1) * 0.007)), curLevel - 1); // Gravity interval formula from NES Tetris))
+	downInputTimer = 0;
+	leftInputTimer = 0;
+	rightInputTimer = 0;
+	sideInputDelay = 0.2;
+	inputInterval = 0.065;
 	lastUpdateTime = GetTime();
 
 
@@ -174,17 +182,24 @@ void Game::HandleInput()
 	if (gameOver && keyPressed != 0) Reset(); // If game over and any key is pressed, restart
 
 	if (gameOver) return; // Prevent input when game is over
-		
+
+	std::cout << "leftInputTimer = " << leftInputTimer << std::endl;
+	std::cout << "deltaTime = " << GetTime() - lastUpdateTime << std::endl;
+	
+	// *** On Input Pressed (the first frame of the input)
 	switch (keyPressed) 
 	{
 		case KEY_LEFT: // Move block left 1 cell
 			MoveBlockLeft();
+			leftInputTimer += GetTime() - lastUpdateTime;
 			break;
 		case KEY_RIGHT: // Move block right 1 cell
 			MoveBlockRight();
+			rightInputTimer += GetTime() - lastUpdateTime;
 			break;
 		case KEY_DOWN: // Move block down 1 cell
 			MoveBlockDown(true, false);
+			downInputTimer += GetTime() - lastUpdateTime;
 			break;
 
 		case KEY_UP: // Rotate clockwise (right)
@@ -202,6 +217,34 @@ void Game::HandleInput()
 			HoldBlock();
 			break;
 	}
+
+	// *** On Input Down (every frame the button is held)
+	if (IsKeyDown(KEY_LEFT)) { // Left key down
+		leftInputTimer += GetTime() - lastUpdateTime;
+		while (leftInputTimer >= inputInterval + sideInputDelay) {
+			MoveBlockLeft();
+			leftInputTimer -= inputInterval;
+		}
+	}
+	if (IsKeyDown(KEY_RIGHT)) { // Right key down
+		rightInputTimer += GetTime() - lastUpdateTime;
+		while (rightInputTimer >= inputInterval + sideInputDelay) {
+			MoveBlockRight();
+			rightInputTimer -= inputInterval;
+		}
+	}
+	if (IsKeyDown(KEY_DOWN)) { // Down key down
+		downInputTimer += GetTime() - lastUpdateTime;
+		while (downInputTimer >= inputInterval) {
+			MoveBlockDown(true, false);
+			downInputTimer -= inputInterval;
+		}
+	}
+
+	// Reset timers when key is not pressed
+	if (leftInputTimer > 0 && IsKeyReleased(KEY_LEFT)) leftInputTimer = 0;
+	if (rightInputTimer > 0 && IsKeyReleased(KEY_RIGHT)) rightInputTimer = 0;
+	if (downInputTimer > 0 && IsKeyReleased(KEY_DOWN)) downInputTimer = 0;
 }
 
 
@@ -255,7 +298,7 @@ bool Game::MoveBlockDown(bool isSoftDrop, bool isHardDrop)
 	// Wall collisions, undo block movement
 	if (IsBlockOutside(curBlock) || !BlockFits(curBlock)) {
 		curBlock.Move(-1, 0);
-		LockBlock(isSoftDrop || isHardDrop); // Stop block from moving and spawn next block
+		LockBlock(isHardDrop); // Stop block from moving and spawn next block
 		return false;
 	}
 	else
@@ -277,6 +320,8 @@ void Game::HardDropBlock()
 // Updates the game timer and lock timer, if the lock delay is reached the block is locked in grid
 void Game::Update()
 {
+	HandleInput();
+
 	if (gameOver) return;
 
 	// Update Timer
@@ -442,10 +487,15 @@ void Game::Reset()
 	levelText.SetText(std::to_string(curLevel));
 	score = 0;
 	scoreText.SetText(std::to_string(score));
+
+	// Timers
 	minutesElapsed = 0;
 	secondsElapsed = 0;
 	gravityTimer = 0;
 	gravityInterval = pow((0.8 - ((curLevel - 1) * 0.007)), curLevel - 1); // Gravity interval formula from NES Tetris))
+	downInputTimer = 0;
+	leftInputTimer = 0;
+	rightInputTimer = 0;
 	lastUpdateTime = GetTime();
 }
 

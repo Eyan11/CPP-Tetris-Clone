@@ -21,7 +21,6 @@ int main()
     {
         // *** Game Loop Logic
         UpdateMusicStream(game.music);
-        game.HandleInput();
         game.Update();
 
         // *** Draw

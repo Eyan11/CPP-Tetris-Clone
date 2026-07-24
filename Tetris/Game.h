@@ -53,10 +53,17 @@ private:
 	int curLevel;
 	int score;
 	int highScore;
+
+	// Timers
 	int minutesElapsed;
 	float secondsElapsed;
 	double gravityTimer;
 	double gravityInterval; // Time interval for automatic downward movement of the block
+	double downInputTimer;
+	double leftInputTimer;
+	double rightInputTimer;
+	float sideInputDelay; // Delay in seconds before allowing repeated left/right movement when holding the key (down input does not have a delay)
+	float inputInterval; // Time interval for repeated left/right/down movements when holding the key
 	double lastUpdateTime;
 
 	// Text
