@@ -518,9 +518,10 @@ void Game::HoldBlock()
 
 	// If hold block is empty, put current block there and spawn new block
 	if (holdBlock.isHoldBlockSet == false) {
-		holdBlock.isHoldBlockSet = true;
 		holdBlock = curBlock;
 		holdBlock.Reset();
+		holdBlock.isHoldBlockSet = true;
+		holdBlock.isHoldBlock = true;
 		SpawnNewBlock();
 		return;
 	}
@@ -530,8 +531,12 @@ void Game::HoldBlock()
 	holdBlock = curBlock;
 	curBlock = tempHoldBlock;
 	curBlock.MoveToStartPosition();
+	curBlock.isHoldBlock = false;
+	curBlock.isHoldBlockSet = false;
+
 	holdBlock.Reset();
 	holdBlock.isHoldBlockSet = true;
+	holdBlock.isHoldBlock = true;
 	
 	ghostBlock = curBlock;
 	ghostBlock.isGhostBlock = true;

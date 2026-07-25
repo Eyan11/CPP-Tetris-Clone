@@ -6,10 +6,12 @@ Block::Block()
 	cellSize = 30;
 	colors = GetCellColors();
 	Reset();
-	isGhostBlock = false;
 	// Not sure what the official order is, but first try to go down, then left/right, then up.
 	rotationOffsetPositions = { {-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {-1, 1}, {1, -1}, {1, 1} };
 	rotationOffsetPositionsIBlock = { {-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {-1, 1}, {1, -1}, {1, 1}, {-2, 0}, {2, 0}, {0, -2}, {0, 2}, {-2, -2}, {-2, 2}, {2, -2}, {2, 2} };
+	isGhostBlock = false;
+	isHoldBlock = false;
+	isHoldBlockSet = false;
 }
 
 // Draws all filled cells with margin given its block id and rotation state
